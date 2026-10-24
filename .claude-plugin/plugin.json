@@ -1,6 +1,6 @@
 {
   "name": "js-spritebake",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Turn local videos into transparent sprite sheets with the JS SpriteBake CLI.",
   "author": { "name": "JongSeok" },
   "repository": "https://github.com/JongSeok-327/js-spritebake",
