@@ -67,6 +67,8 @@ Work is not saved automatically. To continue later, use **설정 저장** (Save 
 
 ## Output files
 
+![Output sheet view](preview-sheet.png)
+
 | File | Contents |
 | --- | --- |
 | `*-sheet.png` | Transparent sprite sheet (grid). |
@@ -163,7 +165,7 @@ python3 -m unittest discover -s tests -p "test_*.py"       # server boundaries
 node tests/browser-check.mjs http://127.0.0.1:8765         # full editor + CLI check, server running
 ```
 
-The browser check generates its own test video and writes temporary files to the ignored `.qa/` folder. Set `UPDATE_PREVIEWS=1` to refresh the README screenshots, and `SPRITE_TEST_BROWSER` for a nonstandard Chrome path. See [CONTRIBUTING.md](CONTRIBUTING.md).
+The browser check generates its own test video and writes temporary files to the ignored `.qa/` folder. Set `SPRITE_TEST_BROWSER` for a nonstandard Chrome path. README screenshots come from a real clip: `node tests/capture-previews.mjs http://127.0.0.1:8765 <video> [start] [end] [frames]`. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License and credits
 

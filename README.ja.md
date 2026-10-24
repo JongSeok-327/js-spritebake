@@ -67,6 +67,8 @@ Pythonがすでにある場合は、プロジェクトのフォルダーで `pyt
 
 ## 出力ファイル
 
+![出力シート画面](preview-sheet.png)
+
 | ファイル | 内容 |
 | --- | --- |
 | `*-sheet.png` | 透過スプライトシート(グリッド) |
@@ -163,7 +165,7 @@ python3 -m unittest discover -s tests -p "test_*.py"       # サーバーのセ�
 node tests/browser-check.mjs http://127.0.0.1:8765         # 編集画面 + CLI の総合チェック(サーバー起動中)
 ```
 
-ブラウザーチェックはテスト動画を自分で生成し、一時ファイルをgit管理外の `.qa/` に保存します。READMEのスクリーンショットを更新するには `UPDATE_PREVIEWS=1` を、Chromeが標準の場所にない場合は `SPRITE_TEST_BROWSER` を指定してください。[CONTRIBUTING.md](CONTRIBUTING.md) も参照してください。
+ブラウザーチェックはテスト動画を自分で生成し、一時ファイルをgit管理外の `.qa/` に保存します。Chromeが標準の場所にない場合は `SPRITE_TEST_BROWSER` を指定してください。READMEのスクリーンショットは実際の動画で更新します:`node tests/capture-previews.mjs http://127.0.0.1:8765 <video> [start] [end] [frames]`。[CONTRIBUTING.md](CONTRIBUTING.md) も参照してください。
 
 ## ライセンスと参考資料
 

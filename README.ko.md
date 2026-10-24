@@ -65,6 +65,8 @@ Python이 이미 있다면 프로젝트 폴더에서 `python3 server.py`(macOS) 
 
 ## 저장 파일
 
+![출력 시트 화면](preview-sheet.png)
+
 | 파일 | 내용 |
 | --- | --- |
 | `*-sheet.png` | 투명 스프라이트 시트(격자) |
@@ -161,7 +163,7 @@ python3 -m unittest discover -s tests -p "test_*.py"       # 서버 보안 경�
 node tests/browser-check.mjs http://127.0.0.1:8765         # 편집 화면 + CLI 전체 검사 (서버 실행 중)
 ```
 
-브라우저 검사는 테스트 영상을 직접 만들고 임시 파일을 git에서 제외된 `.qa/`에 저장합니다. README 스크린샷을 갱신하려면 `UPDATE_PREVIEWS=1`을, Chrome이 기본 위치에 없으면 `SPRITE_TEST_BROWSER`를 지정하세요. [CONTRIBUTING.md](CONTRIBUTING.md)도 참고하세요.
+브라우저 검사는 테스트 영상을 직접 만들고 임시 파일을 git에서 제외된 `.qa/`에 저장합니다. Chrome이 기본 위치에 없으면 `SPRITE_TEST_BROWSER`를 지정하세요. README 스크린샷은 실제 영상으로 갱신합니다: `node tests/capture-previews.mjs http://127.0.0.1:8765 <video> [start] [end] [frames]`. [CONTRIBUTING.md](CONTRIBUTING.md)도 참고하세요.
 
 ## 라이선스와 참고
 

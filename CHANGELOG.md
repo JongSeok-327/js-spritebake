@@ -6,7 +6,7 @@
 - Add a Claude Code plugin with a `spritebake` skill that drives the CLI.
 - Lower the minimum Python version to 3.9 so macOS's bundled `python3` works; `start.command` prefers a newer Python when installed.
 - Add macOS system fonts and a favicon. `npm start` works on macOS.
-- Browser checks no longer overwrite README screenshots unless `UPDATE_PREVIEWS=1`.
+- README screenshots now show a kong-survivors character walk; `tests/capture-previews.mjs` regenerates them, and browser checks no longer overwrite them.
 - Rewrite the English, Korean and Japanese READMEs around quick start, CLI and skill usage.
 
 ## 1.0.0

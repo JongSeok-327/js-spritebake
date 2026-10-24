@@ -19,7 +19,7 @@ On Windows use `py -3` or `python` instead of `python3`. Optional browser checks
 node tests/browser-check.mjs http://127.0.0.1:8765
 ```
 
-The browser script creates its own geometric walking video using canvas and MediaRecorder. A nonstandard Chrome path can be supplied through `SPRITE_TEST_BROWSER`. Temporary profiles and downloads are stored under `.qa/`, which must remain untracked. The check also runs `cli.mjs` once. README screenshots are only rewritten with `UPDATE_PREVIEWS=1`.
+The browser script creates its own geometric walking video using canvas and MediaRecorder. A nonstandard Chrome path can be supplied through `SPRITE_TEST_BROWSER`. Temporary profiles and downloads are stored under `.qa/`, which must remain untracked. The check also runs `cli.mjs` once. It never touches the README screenshots; refresh those from a real clip with `node tests/capture-previews.mjs http://127.0.0.1:8765 <video> [start] [end] [frames]`.
 
 ## Useful reports
 
