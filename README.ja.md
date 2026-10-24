@@ -4,7 +4,7 @@
 
 [English](README.md) · [한국어](README.ko.md) · 日本語
 
-[v1.1.0をダウンロード](https://github.com/JongSeok-327/js-spritebake/releases/tag/v1.1.0) · MIT · APIキー不要 · 動画はPCの外に出ません
+[v1.1.1をダウンロード](https://github.com/JongSeok-327/js-spritebake/releases/tag/v1.1.1) · MIT · APIキー不要 · 動画はPCの外に出ません
 
 ![元動画と書き出した透過スプライト](docs/assets/demo.gif)
 

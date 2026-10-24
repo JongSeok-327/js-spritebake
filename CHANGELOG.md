@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1.1
+
+- Fix an intermittent CLI failure at startup: polling the page before `document.documentElement` existed aborted the run instead of waiting.
+- Add CI on Ubuntu and Windows (unit, server, browser workflow and CLI checks).
+
 ## 1.1.0
 
 - Add English, Korean and Japanese interfaces, including help, status messages and accessibility labels.

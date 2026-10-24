@@ -4,7 +4,7 @@
 
 [English](README.md) · 한국어 · [日本語](README.ja.md)
 
-[v1.1.0 다운로드](https://github.com/JongSeok-327/js-spritebake/releases/tag/v1.1.0) · MIT · API 키 불필요 · 영상이 내 컴퓨터 밖으로 나가지 않음
+[v1.1.1 다운로드](https://github.com/JongSeok-327/js-spritebake/releases/tag/v1.1.1) · MIT · API 키 불필요 · 영상이 내 컴퓨터 밖으로 나가지 않음
 
 ![원본 영상과 내보낸 투명 스프라이트](docs/assets/demo.gif)
 
