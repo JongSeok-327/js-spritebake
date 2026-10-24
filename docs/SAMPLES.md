@@ -4,7 +4,7 @@
 
 The author drew Kong and owns the character. The eight poses are the game's existing sprite frames (`kong_v3/walk_00`–`walk_07`, 256 px), composited onto `#00ff00` at 448 px and recorded with the browser's `MediaRecorder`. Because the poses were already transparent before recording, the sample keys more cleanly than typical camera or generated footage.
 
-`docs/assets/demo.gif` puts the sample's source frames next to the transparent frames the CLI exports from it (8 frames, `--cell 512`). It was assembled with Pillow, a maintainer tool that is **not required to run the app**. The editor screenshots come from `node tests/capture-previews.mjs <server URL>`, which loads this sample in each interface language.
+`docs/assets/demo.gif` puts the sample's source frames next to the transparent frames the CLI exports from it (8 frames, `--cell 512`). It was assembled with Pillow, a maintainer tool that is **not required to run the app**. The editor screenshots come from `node tests/capture-previews.mjs <server URL>`, which loads this sample in each interface language. The walkthrough GIFs (`docs/assets/walkthrough-<lang>.gif`) are recorded with `node tests/capture-walkthrough.mjs <server URL> <lang>` and assembled with `python3 tests/make-walkthrough-gif.py <lang>`. The pointer in them is drawn by the recording script.
 
 The sample, screenshots and demo are included under the project's [MIT license](../LICENSE), as are the code and documentation. That covers these files; it does not grant rights to use the Kong character in other works.
 

@@ -57,6 +57,8 @@ Pythonがすでにある場合は、プロジェクトのフォルダーで `pyt
 
 ## 編集画面の使い方
 
+![操作の流れ:サンプル動画、フレーム抽出、背景の確認、出力シート、ZIP保存](docs/assets/walkthrough-ja.gif)
+
 1. **動画を開く**:動画を選ぶか、ドラッグします。**サンプル動画を試す** ですぐに試すこともできます。MP4(H.264)とWebMが最も安定しています。
 2. **開始 / 終了** と **抽出フレーム数**:最初は先頭1秒・12フレームです。歩行なら1歩の周期全体を選びます。終了時刻は取り出さないため、ループ動画の最初のポーズが二重になりません。
 3. **フレーム抽出** を押します。
@@ -169,7 +171,7 @@ python3 -m unittest discover -s tests -p "test_*.py"       # サーバーのセ�
 node tests/browser-check.mjs http://127.0.0.1:8765         # 編集画面 + CLI の総合チェック(サーバー起動中)
 ```
 
-ブラウザーチェックはテスト動画を自分で生成し、一時ファイルをgit管理外の `.qa/` に保存します。Chromeが標準の場所にない場合は `SPRITE_TEST_BROWSER` を指定してください。READMEのスクリーンショットは同梱サンプルで更新します:`node tests/capture-previews.mjs http://127.0.0.1:8765`。画面の文言は `dist/i18n.js` にあります。[CONTRIBUTING.md](CONTRIBUTING.md) も参照してください。
+ブラウザーチェックはテスト動画を自分で生成し、一時ファイルをgit管理外の `.qa/` に保存します。Chromeが標準の場所にない場合は `SPRITE_TEST_BROWSER` を指定してください。READMEのスクリーンショットは同梱サンプルで更新します:`node tests/capture-previews.mjs http://127.0.0.1:8765`。操作の流れのGIFは `node tests/capture-walkthrough.mjs <URL> <lang>` のあと `python3 tests/make-walkthrough-gif.py <lang>`(Pillowが必要)で作成します。画面の文言は `dist/i18n.js` にあります。[CONTRIBUTING.md](CONTRIBUTING.md) も参照してください。
 
 ## ライセンスと参考資料
 

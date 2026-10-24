@@ -57,6 +57,8 @@ Already have Python? From the project folder you can run `python3 server.py` (ma
 
 ## Using the editor
 
+![Walkthrough: sample video, extraction, background check, output sheet and ZIP export](docs/assets/walkthrough-en.gif)
+
 1. **Open video**: choose or drag in a video, or click **Try sample video**. MP4 (H.264) and WebM work best.
 2. **Start / End** and **Frame count**: the range starts as the first second with 12 frames. For a walk, pick one full step cycle. The end time is not sampled, so a looping clip does not repeat its first pose.
 3. **Extract frames**.
@@ -169,7 +171,7 @@ python3 -m unittest discover -s tests -p "test_*.py"       # server boundaries
 node tests/browser-check.mjs http://127.0.0.1:8765         # full editor + CLI check, server running
 ```
 
-The browser check generates its own test video and writes temporary files to the ignored `.qa/` folder. Set `SPRITE_TEST_BROWSER` for a nonstandard Chrome path. README screenshots come from the bundled sample: `node tests/capture-previews.mjs http://127.0.0.1:8765`. UI text lives in `dist/i18n.js`. See [CONTRIBUTING.md](CONTRIBUTING.md).
+The browser check generates its own test video and writes temporary files to the ignored `.qa/` folder. Set `SPRITE_TEST_BROWSER` for a nonstandard Chrome path. README screenshots come from the bundled sample: `node tests/capture-previews.mjs http://127.0.0.1:8765`; walkthrough GIFs from `node tests/capture-walkthrough.mjs <URL> <lang>` then `python3 tests/make-walkthrough-gif.py <lang>` (needs Pillow). UI text lives in `dist/i18n.js`. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License and credits
 
