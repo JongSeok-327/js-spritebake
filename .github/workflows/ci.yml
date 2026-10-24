@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # Oldest supported Python, the one macOS ships.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.9'
+
+      - name: Syntax and unit tests
+        run: npm run check && npm test
+      - name: Server tests
+        run: python -m unittest discover -s tests -p "test_*.py"
+
+      # Ubuntu 24.04 blocks the user namespaces Chrome's sandbox needs.
+      - name: Allow Chrome sandbox
+        if: runner.os == 'Linux'
+        run: sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0 || true
+      - name: Browser workflow and CLI checks
+        run: |
+          python server.py --no-browser &
+          for i in $(seq 30); do curl -sf http://127.0.0.1:8765/ >/dev/null && break; sleep 1; done
+          node tests/browser-check.mjs http://127.0.0.1:8765
+      - name: CLI on the bundled sample
+        run: node cli.mjs dist/samples/walk-demo.mp4 --frames 8 --format png --out .qa/ci
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: qa-${{ matrix.os }}
+          path: |
+            .qa/**/*.png
+            .qa/**/*.json
+          if-no-files-found: ignore
