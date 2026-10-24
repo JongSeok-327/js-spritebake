@@ -152,7 +152,7 @@ async function run(o) {
     ws.addEventListener('close', () => { for (const p of pending.values()) p.reject(new Error('Browser closed')); pending.clear(); });
     await call('Runtime.enable'); await call('Page.enable');
     await call('Browser.setDownloadBehavior', { behavior: 'allow', downloadPath: downloads });
-    await until('document.documentElement.dataset.ready === "true"', 'opening the editor', 30000);
+    await until('document.documentElement?.dataset.ready === "true"', 'opening the editor', 30000);
 
     await upload('#file-input', o.video);
     await delay(100);
