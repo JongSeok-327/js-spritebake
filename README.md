@@ -4,7 +4,7 @@
 
 English · [한국어](README.ko.md) · [日本語](README.ja.md)
 
-[Download v1.1.0](https://github.com/JongSeok-327/js-spritebake/releases/tag/v1.1.0) · MIT · no API key · your video never leaves your computer
+[Download v1.1.1](https://github.com/JongSeok-327/js-spritebake/releases/tag/v1.1.1) · MIT · no API key · your video never leaves your computer
 
 ![Source video and exported transparent sprites](docs/assets/demo.gif)
 
