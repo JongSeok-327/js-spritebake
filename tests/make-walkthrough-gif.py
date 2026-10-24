@@ -9,6 +9,8 @@ import sys
 from PIL import Image
 
 lang = sys.argv[1] if len(sys.argv) > 1 else 'en'
+if lang not in ('en', 'ko', 'ja'):
+    sys.exit('Usage: python3 tests/make-walkthrough-gif.py <en|ko|ja>')
 root = Path(__file__).resolve().parents[1]
 source = root / '.qa' / f'walkthrough-{lang}'
 frames = json.loads((source / 'frames.json').read_text())

@@ -6,7 +6,8 @@ import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
 const [url, lang = 'en'] = process.argv.slice(2);
-if (!url) { console.error('Usage: node tests/capture-walkthrough.mjs <server URL> <en|ko|ja>'); process.exit(1); }
+// lang becomes part of a folder that is deleted below, so only accept known values.
+if (!url || !['en', 'ko', 'ja'].includes(lang)) { console.error('Usage: node tests/capture-walkthrough.mjs <server URL> <en|ko|ja>'); process.exit(1); }
 const base = resolve(import.meta.dirname, '..');
 const out = resolve(base, '.qa', `walkthrough-${lang}`);
 const profile = resolve(base, '.qa', `walkthrough-profile-${Date.now()}`);
