@@ -102,7 +102,7 @@ function serve() {
 
 async function run(o) {
   const server = await serve();
-  const url = `http://127.0.0.1:${server.address().port}/`;
+  const origin = `http://127.0.0.1:${server.address().port}/`, url = `${origin}?lang=en`;
   const work = await mkdtemp(join(tmpdir(), 'spritebake-'));
   const downloads = join(work, 'downloads');
   const browser = spawn(findBrowser(o.browser), [
@@ -133,14 +133,15 @@ async function run(o) {
     const { result } = await call('Runtime.evaluate', { expression: `document.querySelector(${JSON.stringify(selector)})` });
     await call('DOM.setFileInputFiles', { objectId: result.objectId, files: [file] });
   };
-  const idle = 'document.getElementById("cancel-button").hidden && document.getElementById("project-status").textContent !== "처리 중"';
+  // Sidebar inputs are disabled exactly while the app is busy; this does not depend on UI language.
+  const idle = 'document.getElementById("cancel-button").hidden && !document.getElementById("frame-count").disabled';
   const frames = () => evaluate('document.querySelectorAll(".frame-tile:not(.excluded)").length');
   try {
     let port;
     for (let i = 0; i < 150 && !port; i++) { try { port = (await readFile(join(work, 'profile', 'DevToolsActivePort'), 'utf8')).split('\n')[0]; } catch { await delay(100); } }
     if (!port) fail('The browser did not start. Pass --browser <path> to choose Chrome or Edge.');
     let target;
-    for (let i = 0; i < 100 && !target; i++) { target = (await (await fetch(`http://127.0.0.1:${port}/json/list`)).json()).find(t => t.type === 'page' && t.url.startsWith(url)); if (!target) await delay(100); }
+    for (let i = 0; i < 100 && !target; i++) { target = (await (await fetch(`http://127.0.0.1:${port}/json/list`)).json()).find(t => t.type === 'page' && t.url.startsWith(origin)); if (!target) await delay(100); }
     if (!target) fail('The editor page did not open.');
     ws = new WebSocket(target.webSocketDebuggerUrl);
     await new Promise((resolve, reject) => { ws.addEventListener('open', resolve, { once: true }); ws.addEventListener('error', reject, { once: true }); });
@@ -151,7 +152,7 @@ async function run(o) {
     ws.addEventListener('close', () => { for (const p of pending.values()) p.reject(new Error('Browser closed')); pending.clear(); });
     await call('Runtime.enable'); await call('Page.enable');
     await call('Browser.setDownloadBehavior', { behavior: 'allow', downloadPath: downloads });
-    await until('document.readyState === "complete" && !!document.getElementById("extract-button")', 'opening the editor', 30000);
+    await until('document.documentElement.dataset.ready === "true"', 'opening the editor', 30000);
 
     await upload('#file-input', o.video);
     await delay(100);

@@ -1,11 +1,11 @@
-// Refreshes README screenshots from a real clip:
-// node tests/capture-previews.mjs <server URL> <video> [start] [end] [frames]
+// Refreshes the README screenshots in docs/assets from the bundled sample:
+// node tests/capture-previews.mjs <server URL>
 import { spawn } from 'node:child_process';
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
-const [url, video, start = '0', end = '1', frames = '8'] = process.argv.slice(2);
-if (!url || !video) { console.error('Usage: node tests/capture-previews.mjs <server URL> <video> [start] [end] [frames]'); process.exit(1); }
+const url = process.argv[2];
+if (!url) { console.error('Usage: node tests/capture-previews.mjs <server URL>'); process.exit(1); }
 const base = resolve(import.meta.dirname, '..');
 const profile = resolve(base, '.qa', `previews-${Date.now()}`);
 await mkdir(profile, { recursive: true });
@@ -23,12 +23,12 @@ const until = async (expression, label) => {
   for (let i = 0; i < 600; i++) { if (await evaluate(expression)) return; await delay(100); }
   throw new Error(`Timeout waiting for ${label}`);
 };
-const setValue = (id, value) => evaluate(`document.getElementById(${JSON.stringify(id)}).value=${JSON.stringify(value)};document.getElementById(${JSON.stringify(id)}).dispatchEvent(new Event('input',{bubbles:true}))`);
+const setValue = (id, value, event = 'input') => evaluate(`document.getElementById(${JSON.stringify(id)}).value=${JSON.stringify(value)};document.getElementById(${JSON.stringify(id)}).dispatchEvent(new Event(${JSON.stringify(event)},{bubbles:true}))`);
 const click = id => evaluate(`document.getElementById(${JSON.stringify(id)}).click()`);
 const shoot = async name => {
   await evaluate('document.querySelector("#toast").hidden=true;document.activeElement.blur();window.scrollTo(0,0)');
   const shot = await call('Page.captureScreenshot', { format: 'png', captureBeyondViewport: true });
-  await writeFile(resolve(base, name), Buffer.from(shot.data, 'base64'));
+  await writeFile(resolve(base, 'docs/assets', name), Buffer.from(shot.data, 'base64'));
   console.log(`Wrote ${name}`);
 };
 const ready = 'document.querySelector("#cancel-button").hidden && !document.querySelector("#extract-button").disabled';
@@ -41,18 +41,13 @@ try {
   ws.addEventListener('message', e => { const m = JSON.parse(e.data), p = m.id && pending.get(m.id); if (p) { pending.delete(m.id); m.error ? p.reject(new Error(m.error.message)) : p.resolve(m.result); } });
   await call('Runtime.enable');
   await call('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1100, deviceScaleFactor: 1, mobile: false });
-  await until('document.readyState === "complete"', 'app document');
-  const { result } = await call('Runtime.evaluate', { expression: 'document.querySelector("#file-input")' });
-  await call('DOM.setFileInputFiles', { objectId: result.objectId, files: [resolve(video)] });
-  await delay(200); await until(ready, 'video load');
-  await setValue('start-time', start); await setValue('end-time', end); await setValue('frame-count', frames);
-  await click('extract-button'); await delay(200);
-  await until(`${ready} && document.querySelectorAll('.frame-tile').length === ${Number(frames)}`, 'extraction');
-  await evaluate('document.querySelector("[data-bg=checker]").click()');
+  await until('document.documentElement.dataset.ready === "true"', 'app initialization');
+  await click('load-sample'); await delay(200);
+  await until(`${ready} && document.querySelectorAll('.frame-tile').length === 8`, 'sample extraction');
   await click('next-frame'); await click('next-frame');
-  await shoot('preview.png');
+  for (const lang of ['ko', 'ja', 'en']) { await setValue('language-select', lang, 'change'); await shoot(`editor-${lang}.png`); }
   await click('view-sheet');
-  await shoot('preview-sheet.png');
+  await shoot('sheet-en.png');
 } finally {
   ws?.close(); browser.kill();
   await delay(200); await rm(profile, { recursive: true, force: true }).catch(() => {});

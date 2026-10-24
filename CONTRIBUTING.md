@@ -9,7 +9,7 @@ Use Python 3.9+ and Chrome/Edge. Node.js 22+ is needed for the CLI and JavaScrip
 ```sh
 python3 server.py
 python3 -m unittest discover -s tests -p "test_*.py"
-node --test tests/core.test.mjs
+node --test tests/core.test.mjs tests/i18n.test.mjs
 npm run check
 ```
 
@@ -19,7 +19,7 @@ On Windows use `py -3` or `python` instead of `python3`. Optional browser checks
 node tests/browser-check.mjs http://127.0.0.1:8765
 ```
 
-The browser script creates its own geometric walking video using canvas and MediaRecorder. A nonstandard Chrome path can be supplied through `SPRITE_TEST_BROWSER`. Temporary profiles and downloads are stored under `.qa/`, which must remain untracked. The check also runs `cli.mjs` once. It never touches the README screenshots; refresh those from a real clip with `node tests/capture-previews.mjs http://127.0.0.1:8765 <video> [start] [end] [frames]`.
+The browser script creates its own geometric walking video using canvas and MediaRecorder. A nonstandard Chrome path can be supplied through `SPRITE_TEST_BROWSER`. Temporary profiles and downloads are stored under `.qa/`, which must remain untracked. The check also runs `cli.mjs` once. It never touches the README screenshots; refresh those from the bundled sample with `node tests/capture-previews.mjs http://127.0.0.1:8765`.
 
 ## Useful reports
 
@@ -34,3 +34,5 @@ The browser script creates its own geometric walking video using canvas and Medi
 Preserve shared scaling, source timestamps, transparent output and per-frame timing. Keep normal usage free of package installation and external requests. Follow [DESIGN.md](DESIGN.md) for visual changes. Update all three READMEs, and `skills/spritebake/SKILL.md` for CLI changes, when a change affects setup or use. Tests should check observable behavior, especially saved output and timing.
 
 By contributing, you agree to provide your contribution under this project's [MIT license](LICENSE). This does not change the license or ownership of unrelated media.
+
+UI translations live in `dist/i18n.js`. Update all three catalogs, preserve interpolation arguments and check long labels at narrow widths. Use only the bundled public sample in screenshots; see [sample provenance](docs/SAMPLES.md).

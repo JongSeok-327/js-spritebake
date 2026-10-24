@@ -2,7 +2,7 @@
 
 ## Supported scope
 
-JS SpriteBake 1.0.x is a personal, local application. It is not a hosted service or a hardened public web server. The initial release has automated boundary tests and browser workflow checks; it has not had an independent security audit.
+JS SpriteBake 1.1.x is a personal, local application. It is not a hosted service or a hardened public web server. This release has automated boundary tests and browser workflow checks; it has not had an independent security audit.
 
 ## What the application does
 

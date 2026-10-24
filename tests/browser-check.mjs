@@ -2,14 +2,18 @@ import { spawn, spawnSync } from 'node:child_process';
 import { readFile, writeFile, mkdir, readdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import assert from 'node:assert/strict';
+import { get } from 'node:http';
 
 const base = resolve(import.meta.dirname, '..');
 const qa = resolve(base, '.qa');
 const profile = resolve(qa, `chrome-${Date.now()}`);
 const downloads = resolve(qa, `downloads-${Date.now()}`);
 await mkdir(profile, { recursive: true }); await mkdir(downloads, { recursive: true });
-const url = process.argv[2] || process.env.SPRITE_TEST_URL || 'http://127.0.0.1:8765';
-assert.equal((await fetch(url)).status, 200);
+const url = `${process.argv[2] || process.env.SPRITE_TEST_URL || 'http://127.0.0.1:8765'}/?lang=ko`;
+// Drain HTTP/1.0 responses; avoid a Node 24 undici backpressure assertion.
+assert.equal(await new Promise((resolve, reject) => {
+  get(url, response => { response.resume(); response.on('end', () => resolve(response.statusCode)); }).on('error', reject);
+}), 200);
 const executable = process.env.SPRITE_TEST_BROWSER || (process.platform === 'darwin'
   ? '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
   : process.platform === 'win32' ? 'C:/Program Files/Google/Chrome/Application/chrome.exe' : 'google-chrome');
@@ -69,9 +73,46 @@ try {
   await call('Runtime.enable'); await call('Page.enable'); await call('Network.enable');
   await call('Browser.setDownloadBehavior', { behavior: 'allow', downloadPath: downloads });
   await call('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1100, deviceScaleFactor: 1, mobile: false });
-  await until('!!document.querySelector("#cancel-button")', 'app document');
+  await until('document.documentElement?.dataset.ready === "true"', 'app initialization');
   assert.equal(await evaluate('document.querySelectorAll(".frame-tile").length'), 0);
   assert.equal(await evaluate('document.querySelector("#extract-button").disabled'), true);
+  await click('load-sample');
+  await until(`${ready} && document.querySelectorAll('.frame-tile').length === 8`, 'bundled sample extraction');
+  await delay(300); await click('preview-play');
+  assert.equal(await evaluate('document.querySelector("#file-name").textContent'), 'walk-demo.mp4');
+  assert.ok((await evaluate('document.querySelector("#extraction-diagnostics").textContent')).includes('8/8'));
+  const sampleHashes = await evaluate('[...document.querySelectorAll(".frame-tile")].map(el=>el.dataset.rawHash)');
+  await setValue('offset-x', 3);
+  await evaluate('document.querySelector(".frame-tile input").click()');
+  await evaluate('document.querySelector("#file-name").textContent="원본 영상";document.querySelector("#document-name").textContent="원본 영상"');
+  for (const [lang, extract, help] of [['en','Extract frames','How to use'],['ja','フレーム抽出','使い方'],['ko','프레임 추출','사용 방법']]) {
+    await setValue('language-select', lang, 'change');
+    assert.equal(await evaluate('document.documentElement.lang'),lang);
+    assert.equal(await evaluate('document.querySelector("#extract-button").textContent'),extract);
+    assert.equal(await evaluate('document.querySelector("#help-dialog h2").textContent'),help);
+    assert.deepEqual(await evaluate('[...document.querySelectorAll(".frame-tile")].map(el=>el.dataset.rawHash)'),sampleHashes);
+    assert.equal(await evaluate('document.querySelector("#offset-x").value'),'3');
+    assert.equal(await evaluate('document.querySelectorAll(".frame-tile input:checked").length'),7);
+    assert.equal(await evaluate('document.querySelector("#file-name").textContent'),'원본 영상');
+    assert.equal(await evaluate('document.querySelector("#document-name").textContent'),'원본 영상');
+    if(lang!=='ko') assert.equal(await evaluate('/[가-힣]/.test(document.body.innerText.replace("한국어", "").replaceAll("원본 영상", ""))'),false);
+  }
+  await evaluate('document.querySelector("#file-name").textContent="walk-demo.mp4";document.querySelector("#document-name").textContent="walk-demo.mp4"');
+  await click('reset-settings'); await until(ready,'sample reset');
+  await evaluate('document.querySelector("#toast").hidden=true;document.activeElement.blur()');
+  for (const lang of ['ko','ja','en']) {
+    await setValue('language-select',lang,'change');
+    await evaluate('document.activeElement.blur()');
+    const demoShot = await call('Page.captureScreenshot',{format:'png',captureBeyondViewport:true});
+    await writeFile(resolve(qa,`editor-${lang}.png`),Buffer.from(demoShot.data,'base64'));
+  }
+  await click('view-sheet');
+  const demoSheet = await call('Page.captureScreenshot',{format:'png',captureBeyondViewport:true});
+  await writeFile(resolve(qa,'sheet-en.png'),Buffer.from(demoSheet.data,'base64'));
+  await click('export-zip'); await waitDownload('walk-demo-sprites.zip'); await until(ready,'sample export');
+  await setValue('language-select','ko','change');
+  await click('view-animation');
+  console.log('PASS bundled sample, complete UI translations and preserved edits across three languages');
   const generated = await evaluate(await readFile(resolve(base, 'tests/fixtures/generate-video.js'), 'utf8'));
   const fixture = await waitDownload(generated.filename);
   await upload('#file-input', fixture); await until(ready, 'procedural video load'); await click('extract-button');
@@ -142,7 +183,7 @@ try {
   await click('export-sheet');
   const png = await waitDownload('-sheet.png'); await until(ready, 'PNG export');
   await click('export-zip');
-  const zip = await waitDownload('-sprites.zip'); await until(ready, 'ZIP export');
+  const zip = await waitDownload('walk-test-sprites.zip'); await until(ready, 'ZIP export');
   await click('save-preset'); const preset = await waitDownload('-settings.json');
   await setValue('tolerance', 20); await delay(250); await until(ready, 'temporary key setting');
   await upload('#preset-input', preset); await delay(300); await until(ready, 'preset loaded');
@@ -219,13 +260,16 @@ try {
   const shot = await call('Page.captureScreenshot', { format: 'png', captureBeyondViewport: true });
   await writeFile(resolve(qa, 'preview.png'), Buffer.from(shot.data, 'base64'));
   const responsive = [];
-  for (const width of [1024,768]) {
+  for (const lang of ['en','ja','ko']) {
+  await setValue('language-select',lang,'change');
+  for (const width of [1440,1024,768,390]) {
     await call('Emulation.setDeviceMetricsOverride', { width, height: 1000, deviceScaleFactor: 1, mobile: false });
     await delay(100);
     const size = await evaluate('({width:document.documentElement.clientWidth,scroll:document.documentElement.scrollWidth,controls:[...document.querySelectorAll(".preview-controls,.source-controls")].map(el=>({width:el.clientWidth,scroll:el.scrollWidth}))})');
     assert.ok(size.scroll <= size.width, `Viewport overflow: ${JSON.stringify(size)}`);
     assert.ok(size.controls.every(c=>c.scroll<=c.width+1), `Preview controls overflow: ${JSON.stringify(size)}`);
     responsive.push(size);
+  }
   }
   await call('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 1, mobile: true });
   await delay(200);
@@ -238,7 +282,7 @@ try {
   console.log('PASS responsive layout and no runtime/network failures', mobile);
 } catch (error) {
   if (ws?.readyState === WebSocket.OPEN) {
-    try { console.error('PAGE STATE', await evaluate('({status:document.querySelector("#progress-text").textContent,frames:document.querySelectorAll(".frame-tile").length,toast:document.querySelector("#toast").textContent})')); const shot = await call('Page.captureScreenshot', { format: 'png' }); await writeFile(resolve(qa, 'failure.png'), Buffer.from(shot.data, 'base64')); } catch {}
+    try { console.error('PAGE STATE', await evaluate('({status:document.querySelector("#progress-text").textContent,frames:document.querySelectorAll(".frame-tile").length,toast:document.querySelector("#toast").textContent})'),exceptions); const shot = await call('Page.captureScreenshot', { format: 'png' }); await writeFile(resolve(qa, 'failure.png'), Buffer.from(shot.data, 'base64')); } catch {}
   }
   throw error;
 } finally {

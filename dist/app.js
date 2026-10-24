@@ -1,3 +1,4 @@
+import { t, applyLanguage, initialLanguage } from './i18n.js';
 import { clamp, keyPixels, sharedCrop, makeZip, crc32, suggestDuplicates, applyDuplicatePlan } from './core.js';
 
 const $ = id => document.getElementById(id);
@@ -35,8 +36,8 @@ function report(text, percent = null) {
 }
 function stopPlayback() {
   state.playing = false; state.seam = false; state.pair = null;
-  $('preview-play').textContent = '▶ 재생'; $('preview-play').setAttribute('aria-label', '스프라이트 재생');
-  $('compare-seam').textContent = '처음 ↔ 끝 비교';
+  $('preview-play').textContent = t("m046"); $('preview-play').setAttribute('aria-label', t("m097"));
+  $('compare-seam').textContent = t("m055");
 }
 function updateAvailability() {
   const ready = state.loaded && !state.busy, has = state.frames.length > 0;
@@ -47,13 +48,14 @@ function updateAvailability() {
   ['preview-play', 'export-sheet', 'export-zip'].forEach(id => { $(id).disabled = state.busy || included().length === 0; });
   ['select-all', 'offset-x', 'offset-y', 'reset-offset', 'previous-frame', 'next-frame', 'analyze-duplicates'].forEach(id => { $(id).disabled = state.busy || !has; });
   $('reset-settings').disabled = state.busy;
+  $('language-select').disabled = state.busy;
   $('apply-duplicates').disabled = state.busy || !state.candidates.length;
   $('undo-duplicates').disabled = state.busy || !state.duplicateUndo;
   $('duplicate-threshold').disabled = state.busy;
   $('compare-seam').disabled = state.busy || included().length < 2;
   document.querySelectorAll('.frame-tile input, .frame-tile button, .duplicate-list button').forEach(el => { el.disabled = state.busy; });
   ['cell-size', 'columns', 'crop-content', 'playback-fps', 'loop'].forEach(id => { $(id).disabled = state.busy; });
-  $('project-status').textContent = state.busy ? '처리 중' : has ? `${included().length} 프레임 준비됨` : ready ? '영상 준비됨' : '영상 불러오기';
+  $('project-status').textContent = state.busy ? t("m104") : has ? t("m105", included().length) : ready ? t("m106") : t("m107");
 }
 function setBusy(value, cancellable = false) {
   state.busy = value;
@@ -61,7 +63,7 @@ function setBusy(value, cancellable = false) {
   if (value) { stopPlayback(); video.pause(); }
   updateAvailability();
 }
-function cancelled() { if (state.cancelled) throw new Error('작업을 취소했습니다.'); }
+function cancelled() { if (state.cancelled) throw new Error(t("m108")); }
 function canvas(width, height = width) {
   const c = document.createElement('canvas'); c.width = width; c.height = height; return c;
 }
@@ -74,8 +76,8 @@ function waitForMedia(eventName, action, timeout = 20000) {
   return new Promise((resolve, reject) => {
     const cleanup = () => { clearTimeout(timer); video.removeEventListener(eventName, success); video.removeEventListener('error', fail); };
     const success = () => { cleanup(); resolve(); };
-    const fail = () => { cleanup(); reject(new Error('영상을 읽을 수 없습니다. Chrome 또는 Edge에서 재생 가능한 MP4/WebM을 선택해 주세요.')); };
-    const timer = setTimeout(() => { cleanup(); reject(new Error('영상을 읽는 시간이 초과되었습니다. 파일을 다시 불러와 주세요.')); }, timeout);
+    const fail = () => { cleanup(); reject(new Error(t("m109"))); };
+    const timer = setTimeout(() => { cleanup(); reject(new Error(t("m110"))); }, timeout);
     video.addEventListener(eventName, success, { once: true }); video.addEventListener('error', fail, { once: true });
     try { action(); } catch (error) { cleanup(); reject(error); }
   });
@@ -94,11 +96,11 @@ async function loadVideo(url, name, { objectURL = false } = {}) {
   state.width = 0; state.height = 0; state.crop = null;
   renderStrip(); renderPreview(); $('stale-warning').hidden = true; $('source-empty').hidden = false;
   $('file-info').hidden = true; $('source-dimensions').textContent = '—';
-  report(`${name} 불러오는 중…`);
+  report(t("m111", name));
   const previousURL = state.sourceURL; state.sourceURL = objectURL ? url : null;
   try {
     await waitForMedia('loadeddata', () => { video.src = url; video.load(); });
-    if (!Number.isFinite(video.duration) || video.duration <= 0 || !video.videoWidth) throw new Error('유효한 길이와 해상도가 있는 영상이 필요합니다.');
+    if (!Number.isFinite(video.duration) || video.duration <= 0 || !video.videoWidth) throw new Error(t("m112"));
     state.loaded = true;
     $('source-empty').hidden = true; $('file-info').hidden = false;
     $('file-name').textContent = name;
@@ -108,10 +110,10 @@ async function loadVideo(url, name, { objectURL = false } = {}) {
     $('start-time').value = 0; $('end-time').value = Math.min(1, video.duration).toFixed(3);
     $('start-time').max = video.duration; $('end-time').max = video.duration;
     $('source-scrub').max = video.duration; updateSourceTime();
-    report('영상을 불러왔습니다. 사용할 구간을 정하고 프레임을 추출하세요.');
+    report(t("m113"));
   } catch (error) {
     report(error.message); toast(error.message);
-    $('source-empty').textContent = '영상을 다시 선택해 주세요.';
+    $('source-empty').textContent = t("m114");
   } finally {
     if (previousURL) URL.revokeObjectURL(previousURL);
     setBusy(false);
@@ -132,7 +134,7 @@ function getWorker() {
       };
       worker.onerror = () => {
         workerFailed = true; worker.terminate(); worker = null;
-        for (const job of workerJobs.values()) { clearTimeout(job.timer); job.reject(new Error('배경 처리기를 시작하지 못했습니다. 다시 시도해 주세요.')); }
+        for (const job of workerJobs.values()) { clearTimeout(job.timer); job.reject(new Error(t("m115"))); }
         workerJobs.clear();
       };
     } catch { workerFailed = true; }
@@ -146,7 +148,7 @@ async function processFrame(raw, settings) {
   if (activeWorker) {
     result = await new Promise((resolve, reject) => {
       const id = ++workerID;
-      const timer = setTimeout(() => { workerJobs.delete(id); reject(new Error('배경 처리 시간이 초과되었습니다. 해상도를 낮춰 다시 시도해 주세요.')); }, 30000);
+      const timer = setTimeout(() => { workerJobs.delete(id); reject(new Error(t("m116"))); }, 30000);
       workerJobs.set(id, { resolve, reject, timer });
       activeWorker.postMessage({ id, width: raw.width, height: raw.height, settings, buffer: bytes.buffer }, [bytes.buffer]);
     });
@@ -164,11 +166,11 @@ async function extractFrames() {
   const start = numeric('start-time', 0, video.duration, 0);
   const end = numeric('end-time', 0, video.duration, video.duration);
   const count = frameCount();
-  if (end - start < 0.04) { toast('끝 시간을 시작보다 최소 0.04초 뒤로 지정해 주세요.'); return; }
+  if (end - start < 0.04) { toast(t("m117")); return; }
   const limit = Number($('resolution').value);
   const scale = Math.min(1, limit / Math.max(video.videoWidth, video.videoHeight));
   const width = Math.max(1, Math.round(video.videoWidth * scale)), height = Math.max(1, Math.round(video.videoHeight * scale));
-  if (width * height * count > 40 * 1024 * 1024) { toast('메모리 사용량이 큽니다. 처리 해상도나 프레임 수를 낮춰 주세요.'); return; }
+  if (width * height * count > 40 * 1024 * 1024) { toast(t("m118")); return; }
   $('start-time').value = start; $('end-time').value = end; $('frame-count').value = count;
   const settings = keySettings(), fresh = [], surface = canvas(width, height), ctx = surface.getContext('2d', { willReadFrequently: true });
   const originalTime = video.currentTime;
@@ -178,7 +180,7 @@ async function extractFrames() {
       cancelled();
       // End-exclusive sampling avoids exporting a duplicated loop endpoint.
       const time = start + (end - start) * i / count;
-      report(`프레임 추출 · 배경 제거 ${i + 1} / ${count}`, i / count * 100);
+      report(t("m119", i + 1, count), i / count * 100);
       await seek(time); cancelled();
       ctx.drawImage(video, 0, 0, width, height);
       const raw = ctx.getImageData(0, 0, width, height);
@@ -188,7 +190,7 @@ async function extractFrames() {
       const s = Math.min(preview.width / width, preview.height / height);
       p.drawImage(processed.keyed, (preview.width - width * s) / 2, (preview.height - height * s) / 2, width * s, height * s);
       $('result-empty').hidden = true; $('preview-frame-label').hidden = false;
-      $('preview-frame-label').textContent = `처리 중 ${i + 1} / ${count}`;
+      $('preview-frame-label').textContent = t("m120", i + 1, count);
     }
     state.frames = fresh; state.width = width; state.height = height; state.selected = 0; state.appliedKey = settings; state.duplicateUndo = null; state.duplicateApplied = []; state.duplicateUndoApplied = []; clearCandidates();
     state.extraction = { start, end, count, processingWidth: width, processingHeight: height };
@@ -205,7 +207,7 @@ async function extractFrames() {
       state.pendingPreset = null;
     }
     $('stale-warning').hidden = true; refreshCrop(); renderStrip();
-    report(`${count}개 프레임을 추출했습니다. 재생하며 반복 구간과 가장자리를 확인하세요.`, 100);
+    report(t("m121", count), 100);
   } catch (error) {
     report(error.message); toast(error.message);
   } finally {
@@ -220,13 +222,13 @@ async function rekey() {
   const settings = keySettings(), updated = [];
   try {
     for (let i = 0; i < state.frames.length; i++) {
-      cancelled(); report(`배경 제거 갱신 ${i + 1} / ${state.frames.length}`, i / state.frames.length * 100);
+      cancelled(); report(t("m122", i + 1, state.frames.length), i / state.frames.length * 100);
       updated.push(await processFrame(state.frames[i].raw, settings));
     }
     cancelled();
     updated.forEach((data, i) => Object.assign(state.frames[i], data)); state.appliedKey = settings;
     clearCandidates(); refreshCrop(); renderStrip();
-    report('배경 제거 설정을 모든 프레임에 적용했습니다.', 100);
+    report(t("m123"), 100);
   } catch (error) {
     if (state.appliedKey) {
       $('key-enabled').checked = state.appliedKey.enabled; $('key-color').value = state.appliedKey.color;
@@ -282,7 +284,7 @@ function renderPreview() {
     ctx.beginPath(); ctx.moveTo(preview.width / 2, 0); ctx.lineTo(preview.width / 2, preview.height);
     ctx.moveTo(0, preview.height * 0.9); ctx.lineTo(preview.width, preview.height * 0.9); ctx.stroke(); ctx.restore();
   }
-  $('preview-frame-label').textContent = `${state.playing ? '재생' : '정지'} · ${String(state.selected + 1).padStart(2, '0')} / ${state.frames.length} · ${frame.time.toFixed(3)}s${frame.included ? '' : ' · 제외됨'}${frame.hold > 1 ? ` · ${frame.hold}칸 유지` : ''}`;
+  $('preview-frame-label').textContent = `${state.playing ? t("m124") : t("m125")} · ${String(state.selected + 1).padStart(2, '0')} / ${state.frames.length} · ${frame.time.toFixed(3)}s${frame.included ? '' : t("m126")}${frame.hold > 1 ? t("m127", frame.hold) : ''}`;
 }
 function renderSheetPreview() {
   const frames = included(), columns = Math.min(frames.length || 1, Math.round(numeric('columns', 1, 16, 4))), rows = Math.max(1, Math.ceil(frames.length / columns));
@@ -297,7 +299,7 @@ function renderSheetPreview() {
     ctx.fillStyle = '#222c'; ctx.fillRect(x + 3, y + 3, 24, 15);
     ctx.fillStyle = '#eee'; ctx.font = '10px Consolas, monospace'; ctx.fillText(String(state.frames.indexOf(frame) + 1).padStart(2, '0'), x + 7, y + 14);
   });
-  $('preview-frame-label').textContent = `${columns}열 × ${rows}행 · ${columns * cellSize()} × ${rows * cellSize()}px · 클릭해서 프레임 확인`;
+  $('preview-frame-label').textContent = t("m128", columns, rows, columns * cellSize(), rows * cellSize());
 }
 function selectFrame(index, pause = true) {
   if (state.busy) return;
@@ -310,7 +312,7 @@ function selectFrame(index, pause = true) {
   const f = state.frames[state.selected];
   if (f) {
     if (pause && state.loaded) { video.pause(); video.currentTime = f.time; }
-    $('selected-label').textContent = `프레임 ${String(state.selected + 1).padStart(2, '0')} · ${f.time.toFixed(3)}초`;
+    $('selected-label').textContent = t("m129", String(state.selected + 1).padStart(2, '0'), f.time.toFixed(3));
     $('offset-x').value = f.x; $('offset-y').value = f.y;
   }
   renderPreview();
@@ -318,15 +320,15 @@ function selectFrame(index, pause = true) {
 function renderStrip() {
   const strip = $('frame-strip'); strip.replaceChildren();
   if (!state.frames.length) {
-    const empty = document.createElement('div'); empty.className = 'frames-empty'; empty.textContent = '선택한 구간의 프레임이 여기에 모입니다.'; strip.append(empty);
-    $('selected-label').textContent = '선택한 프레임 없음'; updateSummary(); return;
+    const empty = document.createElement('div'); empty.className = 'frames-empty'; empty.textContent = t("m056"); strip.append(empty);
+    $('selected-label').textContent = t("m057"); updateSummary(); return;
   }
   state.frames.forEach((frame, i) => {
     const tile = document.createElement('div'); tile.className = `frame-tile${i === state.selected ? ' selected' : ''}${frame.included ? '' : ' excluded'}`;
-    const button = document.createElement('button'); button.className = 'checker'; button.setAttribute('aria-label', `프레임 ${i + 1}, ${frame.time.toFixed(3)}초 선택`); button.setAttribute('aria-pressed', String(i === state.selected));
+    const button = document.createElement('button'); button.className = 'checker'; button.setAttribute('aria-label', t("m130", i + 1, frame.time.toFixed(3))); button.setAttribute('aria-pressed', String(i === state.selected));
     tile.dataset.rawHash = frame.rawHash;
     const thumb = canvas(144); thumb.getContext('2d').drawImage(outputCanvas(frame), 0, 0, 144, 144); button.append(thumb); button.addEventListener('click', () => selectFrame(i));
-    const checkbox = document.createElement('input'); checkbox.type = 'checkbox'; checkbox.checked = frame.included; checkbox.setAttribute('aria-label', `프레임 ${i + 1} 포함`);
+    const checkbox = document.createElement('input'); checkbox.type = 'checkbox'; checkbox.checked = frame.included; checkbox.setAttribute('aria-label', t("m131", i + 1));
     checkbox.addEventListener('change', () => { if (state.busy) return; stopPlayback(); frame.included = checkbox.checked; tile.classList.toggle('excluded', !frame.included); updateSummary(); analyzeDuplicates(); });
     const caption = document.createElement('div'); caption.className = 'frame-caption';
     const number = document.createElement('span'); number.textContent = String(i + 1).padStart(2, '0');
@@ -335,7 +337,7 @@ function renderStrip() {
   });
   // Selection text is also refreshed while a job is finishing.
   const f = state.frames[state.selected];
-  if (f) { $('selected-label').textContent = `프레임 ${String(state.selected + 1).padStart(2, '0')} · ${f.time.toFixed(3)}초`; $('offset-x').value = f.x; $('offset-y').value = f.y; }
+  if (f) { $('selected-label').textContent = t("m129", String(state.selected + 1).padStart(2, '0'), f.time.toFixed(3)); $('offset-x').value = f.x; $('offset-y').value = f.y; }
   updateSummary();
   markCandidates();
 }
@@ -349,22 +351,22 @@ function frameClipped(frame) {
 function updateSummary() {
   const frames = included(), n = frames.length, cols = Math.min(n || 1, Math.round(numeric('columns', 1, 16, 4))), rows = Math.ceil(n / cols);
   $('frame-total').textContent = `${n} / ${state.frames.length}`;
-  $('export-summary').textContent = n ? `${n}프레임 · ${cellSize()}px / 칸 · ${cols * cellSize()} × ${rows * cellSize()} PNG · ${(durationMs() / 1000).toFixed(2)}초 / 재생` : 'PNG 시트 · 개별 PNG · 프레임 정보 JSON';
+  $('export-summary').textContent = n ? t("m132", n, cellSize(), cols * cellSize(), rows * cellSize(), (durationMs() / 1000).toFixed(2)) : t("m067");
   $('pixel-size-label').textContent = `${cellSize()} × ${cellSize()} px`;
   if (state.extraction) {
     const e = state.extraction, unique = countUniqueSources();
-    $('extraction-diagnostics').textContent = `${e.start.toFixed(3)}–${e.end.toFixed(3)}초 · ${((e.end - e.start) / e.count).toFixed(3)}초 간격 · 서로 다른 영상 프레임 ${unique}/${state.frames.length}`;
+    $('extraction-diagnostics').textContent = t("m133", e.start.toFixed(3), e.end.toFixed(3), ((e.end - e.start) / e.count).toFixed(3), unique, state.frames.length);
     const sparse = e.count / (e.end - e.start) < 8;
     $('sampling-warning').hidden = !sparse && unique === state.frames.length;
-    $('sampling-warning').textContent = sparse ? `초당 ${(e.count / (e.end - e.start)).toFixed(1)}장만 추출했습니다. 걷기의 중간 자세를 놓칠 수 있으니 구간을 짧게 하거나 프레임 수를 늘려 보세요.` : `${state.frames.length - unique}장은 다른 추출 프레임과 픽셀이 같습니다. 영상 프레임 간격보다 촘촘하게 추출했을 수 있습니다.`;
-  } else { $('sampling-warning').hidden = true; $('extraction-diagnostics').textContent = '프레임을 선택하면 원본 위치도 함께 이동합니다.'; }
+    $('sampling-warning').textContent = sparse ? t("m134", (e.count / (e.end - e.start)).toFixed(1)) : t("m135", state.frames.length - unique);
+  } else { $('sampling-warning').hidden = true; $('extraction-diagnostics').textContent = t("m052"); }
   const warnings = [];
-  if (state.frames.length && !n) warnings.push('포함된 프레임이 없습니다. 하나 이상 선택해 주세요.');
+  if (state.frames.length && !n) warnings.push(t("m136"));
   const empty = frames.filter(f => !f.bounds).length;
-  if (empty) warnings.push(`${empty}개 프레임이 완전히 투명합니다. 배경 제거 범위를 낮춰 보세요.`);
+  if (empty) warnings.push(t("m137", empty));
   const clipped = frames.filter(frameClipped).length;
-  if (clipped) warnings.push(`${clipped}개 프레임이 출력 칸 밖으로 잘립니다. X/Y 이동량을 줄이거나 공통 여백 줄이기를 해제해 주세요.`);
-  if (n && n < state.frames.length) warnings.push(frames.some(f => f.hold > 1) ? '중복 후보의 시간은 앞 프레임에 합쳐졌습니다. 프레임별 재생 시간은 ZIP의 JSON에 저장됩니다.' : '직접 제외한 프레임의 시간은 압축됩니다. 재생 FPS로 전체 속도를 조절하세요.');
+  if (clipped) warnings.push(t("m138", clipped));
+  if (n && n < state.frames.length) warnings.push(frames.some(f => f.hold > 1) ? t("m139") : t("m140"));
   $('frame-warning').hidden = !warnings.length; $('frame-warning').textContent = warnings.join(' ');
 }
 
@@ -384,7 +386,7 @@ function countUniqueSources() {
 function clearCandidates() {
   state.candidates = [];
   $('duplicate-list').replaceChildren();
-  $('duplicate-summary').textContent = '이웃한 프레임의 캐릭터와 하체를 비교합니다. 후보 제외 시 재생 시간을 유지합니다.';
+  $('duplicate-summary').textContent = t("m064");
   document.querySelectorAll('.frame-tile.candidate').forEach(tile => tile.classList.remove('candidate'));
   document.querySelectorAll('.candidate-marker').forEach(el => el.remove());
   renderDuplicateHistory();
@@ -395,8 +397,8 @@ function renderDuplicateHistory() {
   for (const c of state.duplicateApplied) {
     const button = document.createElement('button');
     const number = String(c.index + 1).padStart(2, '0'), kept = String(c.keep + 1).padStart(2, '0');
-    button.textContent = state.frames[c.index]?.included ? `${number} · 다시 포함됨` : `${number} 제외 → ${kept}에 시간 합침`;
-    button.title = `프레임 ${c.index + 1} 확인`;
+    button.textContent = state.frames[c.index]?.included ? t("m141", number) : t("m142", number, kept);
+    button.title = t("m143", c.index + 1);
     button.addEventListener('click', () => selectFrame(c.index));
     button.disabled = state.busy; list.append(button);
   }
@@ -407,7 +409,7 @@ function markCandidates() {
     const c = state.candidates.find(c => c.index === index);
     tile.classList.toggle('candidate', !!c);
     const applied = !state.frames[index]?.included && state.duplicateApplied.some(c => c.index === index);
-    if (c || applied) { const mark = document.createElement('span'); mark.className = 'candidate-marker'; mark.textContent = c ? '중복 후보' : '중복 제외'; tile.append(mark); }
+    if (c || applied) { const mark = document.createElement('span'); mark.className = 'candidate-marker'; mark.textContent = c ? t("m059") : t("m144"); tile.append(mark); }
   });
 }
 function analyzeDuplicates() {
@@ -423,16 +425,16 @@ function analyzeDuplicates() {
   const threshold = numeric('duplicate-threshold', 0, 8, 2);
   state.candidates = suggestDuplicates(signatures, threshold / 100);
   $('duplicate-summary').textContent = state.candidates.length
-    ? `${state.candidates.length}개 후보 · 전체/하체 차이가 모두 ${threshold}% 이하입니다. 아래 번호를 눌러 두 자세를 번갈아 확인하세요. 제외는 직접 적용합니다.`
-    : `허용 차이 ${threshold}%에서 인접 중복 후보가 없습니다. 비슷한 자세가 다른 걷기 주기에 다시 나오는 경우는 묶지 않습니다.`;
+    ? t("m145", state.candidates.length, threshold)
+    : t("m146", threshold);
   for (const c of state.candidates) {
     const button = document.createElement('button');
-    button.textContent = `${String(c.keep + 1).padStart(2, '0')} ↔ ${String(c.index + 1).padStart(2, '0')} · 차이 ${(c.score * 100).toFixed(1)}%`;
-    button.title = `전체 ${(c.overall * 100).toFixed(2)}%, 하체 ${(c.lower * 100).toFixed(2)}% 차이. 클릭해서 비교`;
+    button.textContent = t("m147", String(c.keep + 1).padStart(2, '0'), String(c.index + 1).padStart(2, '0'), (c.score * 100).toFixed(1));
+    button.title = t("m148", (c.overall * 100).toFixed(2), (c.lower * 100).toFixed(2));
     button.addEventListener('click', () => {
       stopPlayback(); setView('animation'); selectFrame(c.keep);
       state.pair = [c.keep, c.index]; state.playing = true; state.lastTick = performance.now();
-      $('preview-play').textContent = 'Ⅱ 정지'; $('preview-play').setAttribute('aria-label', '비교 일시 정지');
+      $('preview-play').textContent = t("m149"); $('preview-play').setAttribute('aria-label', t("m150"));
       document.querySelectorAll('.duplicate-list button').forEach(b => b.classList.toggle('active', b === button));
     });
     $('duplicate-list').append(button);
@@ -451,19 +453,19 @@ function applyCandidates() {
   clearCandidates(); renderStrip();
   if (!state.frames[state.selected].included) state.selected = state.frames.indexOf(included()[0]);
   selectFrame(state.selected); updateAvailability();
-  $('duplicate-summary').textContent = `${count}개 후보를 제외했습니다. 해당 시간은 앞 프레임에 합쳤습니다. ‘되돌리기’로 복원할 수 있습니다.`;
-  toast(`${count}개 후보 제외 · 전체 재생 시간 유지`);
+  $('duplicate-summary').textContent = t("m151", count);
+  toast(t("m152", count));
 }
 function undoCandidates() {
   if (!state.duplicateUndo || state.busy) return;
   stopPlayback(); state.duplicateUndo.forEach((v, i) => Object.assign(state.frames[i], v));
   state.duplicateUndo = null; state.duplicateApplied = state.duplicateUndoApplied; state.duplicateUndoApplied = []; renderDuplicateHistory(); renderStrip(); renderPreview(); analyzeDuplicates();
-  toast('중복 후보 제외를 되돌렸습니다.');
+  toast(t("m153"));
 }
-async function resetSettings() {
+async function resetSettings(overrides = {}) {
   if (state.busy) return;
   clearTimeout(keyTimer); keyTimer = null; stopPlayback(); setPicking(false);
-  const defaults = { 'start-time': 0, 'end-time': state.loaded ? Math.min(1, video.duration) : 1, 'frame-count': 12, resolution: 1024, 'key-color': '#00ff00', tolerance: 30, softness: 8, despill: 75, 'cell-size': 256, columns: 4, 'playback-fps': 12, 'duplicate-threshold': 2 };
+  const defaults = { 'start-time': 0, 'end-time': state.loaded ? Math.min(1, video.duration) : 1, 'frame-count': 12, resolution: 1024, 'key-color': '#00ff00', tolerance: 30, softness: 8, despill: 75, 'cell-size': 256, columns: 4, 'playback-fps': 12, 'duplicate-threshold': 2, ...overrides };
   for (const [id, value] of Object.entries(defaults)) $(id).value = value;
   for (const id of ['key-enabled', 'crop-content', 'loop']) $(id).checked = true;
   $('show-guides').checked = false; $('onion-skin').checked = false;
@@ -471,12 +473,12 @@ async function resetSettings() {
   $('color-value').textContent = '#00FF00';
   state.frames = []; state.extraction = null; state.selected = 0; state.pendingPreset = null; state.duplicateUndo = null; state.duplicateApplied = []; state.duplicateUndoApplied = []; state.crop = null;
   clearCandidates(); renderStrip(); setView('animation');
-  $('frame-strip').classList.remove('horizontal'); $('toggle-grid').textContent = '가로 목록'; $('toggle-grid').setAttribute('aria-pressed', 'true');
+  $('frame-strip').classList.remove('horizontal'); $('toggle-grid').textContent = t("m053"); $('toggle-grid').setAttribute('aria-pressed', 'true');
   document.querySelector('[data-bg="checker"]').click();
   $('stale-warning').hidden = true; updateAvailability();
   if (state.loaded) await extractFrames();
-  else report('기본 설정으로 초기화했습니다.');
-  toast('기본 설정으로 초기화했습니다. 현재 영상의 첫 1초를 사용합니다.');
+  else report(t("m154"));
+  toast(t("m155"));
 }
 function playbackTick(now) {
   if (state.playing && !state.busy) {
@@ -502,14 +504,14 @@ function play(seam = false) {
   setView('animation');
   selectFrame(state.frames.indexOf(included()[0]), false);
   state.playing = true; state.lastTick = performance.now();
-  $('preview-play').textContent = 'Ⅱ 정지'; $('preview-play').setAttribute('aria-label', '스프라이트 일시 정지');
-  if (seam) $('compare-seam').textContent = '비교 멈추기';
+  $('preview-play').textContent = t("m149"); $('preview-play').setAttribute('aria-label', t("m156"));
+  if (seam) $('compare-seam').textContent = t("m157");
 }
 
 function setPicking(value) {
   state.picking = value; $('source-stage').classList.toggle('picking', value);
   $('pick-hint').hidden = !value; $('pick-color').setAttribute('aria-pressed', String(value));
-  $('pick-color').textContent = value ? '색 선택 취소' : '원본에서 색 찍기';
+  $('pick-color').textContent = value ? t("m158") : t("m025");
   if (value) video.pause();
 }
 $('source-stage').addEventListener('click', event => {
@@ -521,10 +523,10 @@ $('source-stage').addEventListener('click', event => {
   const c = canvas(1), ctx = c.getContext('2d', { willReadFrequently: true }); ctx.drawImage(video, x, y, 1, 1, 0, 0, 1, 1);
   const rgb = ctx.getImageData(0, 0, 1, 1).data;
   $('key-color').value = '#' + [...rgb.slice(0, 3)].map(n => n.toString(16).padStart(2, '0')).join('');
-  setPicking(false); scheduleKey(); toast('선택한 색으로 배경 제거를 적용합니다.');
+  setPicking(false); scheduleKey(); toast(t("m159"));
 });
 
-function toBlob(c) { return new Promise((resolve, reject) => c.toBlob(b => b ? resolve(b) : reject(new Error('이미지 생성에 실패했습니다. 출력 크기를 낮춰 주세요.')), 'image/png')); }
+function toBlob(c) { return new Promise((resolve, reject) => c.toBlob(b => b ? resolve(b) : reject(new Error(t("m160"))), 'image/png')); }
 function download(blob, name) {
   const url = URL.createObjectURL(blob), a = document.createElement('a'); a.href = url; a.download = name;
   document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 60000);
@@ -551,8 +553,8 @@ async function exportSprites(zip) {
   if (keyTimer) { clearTimeout(keyTimer); keyTimer = null; await rekey(); }
   if (state.busy) return;
   const frames = included(), columns = Math.min(frames.length, Math.round(numeric('columns', 1, 16, 4))), rows = Math.ceil(frames.length / columns), size = cellSize();
-  if (columns * size > 16384 || rows * size > 16384 || columns * rows * size * size > 32 * 1024 * 1024) { toast('시트가 너무 큽니다. 한 칸 크기나 열 개수를 줄여 주세요.'); return; }
-  setBusy(true); report('투명 PNG 시트를 만드는 중…', 0);
+  if (columns * size > 16384 || rows * size > 16384 || columns * rows * size * size > 32 * 1024 * 1024) { toast(t("m161")); return; }
+  setBusy(true); report(t("m162"), 0);
   try {
     await nextPaint(); const sheet = canvas(columns * size, rows * size), ctx = sheet.getContext('2d');
     frames.forEach((f, i) => paintFrame(ctx, f, size, i % columns * size, Math.floor(i / columns) * size));
@@ -561,7 +563,7 @@ async function exportSprites(zip) {
       const metadata = exportMetadata(frames, columns, rows);
       const files = [{ name: `${name}-sheet.png`, data: new Uint8Array(await sheetBlob.arrayBuffer()) }, { name: `${name}.json`, data: new TextEncoder().encode(JSON.stringify(metadata, null, 2)) }];
       for (let i = 0; i < frames.length; i++) {
-        report(`개별 PNG 저장 준비 ${i + 1} / ${frames.length}`, (i + 1) / frames.length * 100);
+        report(t("m163", i + 1, frames.length), (i + 1) / frames.length * 100);
         const png = await toBlob(outputCanvas(frames[i]));
         files.push({ name: `frames/${String(i + 1).padStart(3, '0')}.png`, data: new Uint8Array(await png.arrayBuffer()) });
         await nextPaint();
@@ -569,8 +571,8 @@ async function exportSprites(zip) {
       files.push({ name: `${name}-settings.json`, data: new TextEncoder().encode(JSON.stringify(presetData(), null, 2)) });
       download(makeZip(files), `${name}-sprites.zip`);
     } else download(sheetBlob, `${name}-sheet.png`);
-    report(`${zip ? 'ZIP' : 'PNG 시트'} 다운로드를 시작했습니다.`, 100);
-    toast(zip ? '시트 · 개별 PNG · JSON · 설정 파일을 ZIP으로 저장합니다.' : '투명 PNG 시트를 저장합니다.');
+    report(t("m164", zip ? 'ZIP' : t("m068")), 100);
+    toast(zip ? t("m165") : t("m166"));
   } catch (error) { report(error.message); toast(error.message); }
   finally { setBusy(false); }
 }
@@ -584,9 +586,9 @@ function presetData() {
 }
 async function readPreset(file) {
   try {
-    if (!file || file.size > 1024 * 1024) throw new Error('1MB 이하의 설정 JSON 파일을 선택해 주세요.');
+    if (!file || file.size > 1024 * 1024) throw new Error(t("m167"));
     const data = JSON.parse(await file.text());
-    if (!['js-spritebake-preset', 'sprite-workshop-preset'].includes(data.format) || data.version !== 1 || !data.settings) throw new Error('이 도구에서 저장한 설정 파일이 아닙니다.');
+    if (!['js-spritebake-preset', 'sprite-workshop-preset'].includes(data.format) || data.version !== 1 || !data.settings) throw new Error(t("m168"));
     const s = data.settings;
     const numbers = { 'start-time': [s.start, 0, state.loaded ? video.duration : 86400], 'end-time': [s.end, 0, state.loaded ? video.duration : 86400], 'frame-count': [s.count, 2, 64], tolerance: [s.tolerance, 1, 60], softness: [s.softness, 0, 20], despill: [s.despill, 0, 100], columns: [s.columns, 1, 16], 'playback-fps': [s.fps, 0.5, 60] };
     for (const [id, [value, low, high]] of Object.entries(numbers)) if (Number.isFinite(value)) $(id).value = clamp(value, low, high);
@@ -594,17 +596,40 @@ async function readPreset(file) {
     if ([128, 256, 512, 1024].includes(s.cellSize)) $('cell-size').value = s.cellSize;
     if (/^#[0-9a-f]{6}$/i.test(s.color)) $('key-color').value = s.color;
     $('key-enabled').checked = s.enabled !== false; $('crop-content').checked = s.crop !== false; $('loop').checked = s.loop !== false;
-    if (data.frames && (!Array.isArray(data.frames) || data.frames.length > 64 || data.frames.some(f => !f || typeof f !== 'object'))) throw new Error('프레임 설정이 올바르지 않습니다.');
+    if (data.frames && (!Array.isArray(data.frames) || data.frames.length > 64 || data.frames.some(f => !f || typeof f !== 'object'))) throw new Error(t("m169"));
     state.pendingPreset = data; stopPlayback(); scheduleKey(); refreshCrop(); renderStrip(); renderPreview();
     $('stale-warning').hidden = false;
-    toast(data.source && data.source !== state.name ? `설정 원본은 ${data.source}입니다. 현재 영상에 적용하려면 다시 추출하세요.` : '설정을 불러왔습니다. 다시 추출하면 프레임 선택과 위치도 복원됩니다.');
-  } catch (error) { toast(`설정 불러오기 실패: ${error.message}`); }
+    toast(data.source && data.source !== state.name ? t("m170", data.source) : t("m171"));
+  } catch (error) { toast(t("m172", error.message)); }
 }
 
 $('file-input').addEventListener('change', event => {
   const file = event.target.files[0]; if (file) loadVideo(URL.createObjectURL(file), file.name, { objectURL: true }); event.target.value = '';
 });
-$('reset-settings').addEventListener('click', resetSettings);
+$('load-sample').addEventListener('click', async () => {
+  if (state.busy) return;
+  setBusy(true); report(t('sampleLoading'));
+  try {
+    // Use a complete local Blob so seeking also works on servers without byte ranges.
+    const response = await fetch(new URL('./samples/walk-demo.mp4', import.meta.url));
+    if (!response.ok) throw new Error(t('sampleFailed'));
+    const blob = await response.blob();
+    setBusy(false);
+    await loadVideo(URL.createObjectURL(blob), 'walk-demo.mp4', { objectURL: true });
+    // The bundled walk is one 8-pose cycle per second.
+    if (state.loaded) { await resetSettings({ 'frame-count': 8 }); if (included().length) play(); }
+  } catch { report(t('sampleFailed')); toast(t('sampleFailed')); }
+  finally { setBusy(false); }
+});
+$('language-select').addEventListener('change', event => {
+  applyLanguage(event.target.value);
+  stopPlayback();
+  renderStrip(); renderPreview(); renderDuplicateHistory(); updateAvailability();
+  setPicking(state.picking);
+  $('source-play').setAttribute('aria-label', video.paused ? t('m087') : t('m176'));
+  $('toggle-grid').textContent = $('frame-strip').classList.contains('horizontal') ? t('m173') : t('m053');
+});
+$('reset-settings').addEventListener('click', () => resetSettings());
 $('analyze-duplicates').addEventListener('click', analyzeDuplicates);
 $('duplicate-threshold').addEventListener('change', analyzeDuplicates);
 $('apply-duplicates').addEventListener('click', applyCandidates);
@@ -616,7 +641,7 @@ $('previous-frame').addEventListener('click', () => selectFrame((state.selected 
 $('next-frame').addEventListener('click', () => selectFrame((state.selected + 1) % state.frames.length));
 $('toggle-grid').addEventListener('click', () => {
   const horizontal = $('frame-strip').classList.toggle('horizontal');
-  $('toggle-grid').textContent = horizontal ? '격자 목록' : '가로 목록';
+  $('toggle-grid').textContent = horizontal ? t("m173") : t("m053");
   $('toggle-grid').setAttribute('aria-pressed', String(!horizontal));
 });
 $('one-second').addEventListener('click', () => {
@@ -634,21 +659,21 @@ preview.addEventListener('click', event => {
 for (const event of ['dragenter', 'dragover']) $('drop-zone').addEventListener(event, e => { e.preventDefault(); $('drop-zone').classList.add('dragging'); });
 for (const event of ['dragleave', 'drop']) $('drop-zone').addEventListener(event, e => { e.preventDefault(); $('drop-zone').classList.remove('dragging'); });
 $('drop-zone').addEventListener('drop', e => {
-  if (state.busy) { toast('현재 처리가 끝난 뒤 영상을 바꿔 주세요.'); return; }
+  if (state.busy) { toast(t("m174")); return; }
   const file = e.dataTransfer.files[0]; if (file) loadVideo(URL.createObjectURL(file), file.name, { objectURL: true });
 });
 window.addEventListener('dragover', e => e.preventDefault());
 window.addEventListener('drop', e => e.preventDefault());
 $('extract-button').addEventListener('click', extractFrames);
-$('cancel-button').addEventListener('click', () => { state.cancelled = true; $('cancel-button').disabled = true; report('현재 프레임 처리 후 취소합니다…'); });
+$('cancel-button').addEventListener('click', () => { state.cancelled = true; $('cancel-button').disabled = true; report(t("m175")); });
 for (const id of ['start-time', 'end-time', 'frame-count', 'resolution']) $(id).addEventListener('input', () => { $('stale-warning').hidden = !state.frames.length; });
 $('set-start').addEventListener('click', () => { $('start-time').value = video.currentTime.toFixed(3); $('stale-warning').hidden = !state.frames.length; });
 $('set-end').addEventListener('click', () => { $('end-time').value = video.currentTime.toFixed(3); $('stale-warning').hidden = !state.frames.length; });
 for (const id of ['key-enabled', 'key-color', 'tolerance', 'softness', 'despill']) $(id).addEventListener('input', scheduleKey);
 $('pick-color').addEventListener('click', () => setPicking(!state.picking));
 $('source-play').addEventListener('click', async () => { if (video.paused) { try { await video.play(); } catch (error) { toast(error.message); } } else video.pause(); });
-video.addEventListener('play', () => { $('source-play').textContent = 'Ⅱ'; $('source-play').setAttribute('aria-label', '원본 일시 정지'); });
-video.addEventListener('pause', () => { $('source-play').textContent = '▶'; $('source-play').setAttribute('aria-label', '원본 재생'); });
+video.addEventListener('play', () => { $('source-play').textContent = 'Ⅱ'; $('source-play').setAttribute('aria-label', t("m176")); });
+video.addEventListener('pause', () => { $('source-play').textContent = '▶'; $('source-play').setAttribute('aria-label', t("m087")); });
 video.addEventListener('timeupdate', updateSourceTime);
 $('source-scrub').addEventListener('input', () => { video.pause(); video.currentTime = Number($('source-scrub').value); updateSourceTime(); });
 $('preview-play').addEventListener('click', () => play());
@@ -684,9 +709,11 @@ document.addEventListener('keydown', event => {
 });
 window.addEventListener('pagehide', () => { if (state.sourceURL) URL.revokeObjectURL(state.sourceURL); worker?.terminate(); });
 requestAnimationFrame(playbackTick);
+applyLanguage(initialLanguage(), { updateURL: false });
 updateAvailability();
 if (location.protocol === 'file:') {
-  report('Windows는 start.cmd, macOS는 start.command 또는 python3 server.py로 실행해 주세요.');
+  report(t("m177"));
 } else {
-  report('영상 파일을 불러와 시작하세요. 영상은 이 브라우저에서 처리됩니다.');
+  report(t("m050"));
 }
+document.documentElement.dataset.ready = 'true';

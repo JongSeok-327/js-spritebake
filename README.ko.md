@@ -4,11 +4,15 @@
 
 [English](README.md) · 한국어 · [日本語](README.ja.md)
 
-[v1.0.0 다운로드](https://github.com/JongSeok-327/js-spritebake/releases/tag/v1.0.0) · MIT · API 키 불필요 · 영상이 내 컴퓨터 밖으로 나가지 않음
+[v1.1.0 다운로드](https://github.com/JongSeok-327/js-spritebake/releases/tag/v1.1.0) · MIT · API 키 불필요 · 영상이 내 컴퓨터 밖으로 나가지 않음
 
-![JS SpriteBake 편집 화면](preview.png)
+![원본 영상과 내보낸 투명 스프라이트](docs/assets/demo.gif)
 
 단색 배경 앞에서 찍은 캐릭터 영상에서 구간을 고르면, 일정한 간격으로 프레임을 뽑아 배경을 지웁니다. 애니메이션 전체에 같은 잘라내기 영역과 배율을 적용해 투명 PNG 시트로 저장합니다. 게임 엔진용으로 개별 프레임과 프레임별 재생 시간이 든 ZIP도 저장할 수 있습니다.
+
+[![JS SpriteBake 편집 화면](docs/assets/editor-ko.png)](docs/assets/editor-ko.png)
+
+**영상이 아직 없다면?** 편집 화면에서 **샘플 영상으로 시작**을 누르세요. 제 게임 *kong-survivors*의 주인공 콩이 걷는 2초짜리 영상을 불러와 걷기 한 주기를 뽑고 재생합니다. [샘플 설명](docs/SAMPLES.md)
 
 사용 방법은 세 가지입니다.
 
@@ -18,6 +22,8 @@
 | [**명령줄(CLI)**](#명령줄cli) | 같은 설정 반복, 스크립트, 여러 파일 일괄 처리 | Node.js 22+ · Chrome 또는 Edge |
 | [**Claude Code 스킬**](#claude-code-스킬) | "이 영상으로 스프라이트 시트 만들어줘"처럼 말로 요청 | Claude Code · Node.js 22+ · Chrome 또는 Edge |
 
+편집 화면은 **English, 한국어, 日本語**를 지원합니다. 오른쪽 위에서 언어를 바꿔도 영상과 편집 내용은 그대로입니다. 처음에는 브라우저 언어를 따르고, 주소 끝에 `?lang=en`, `?lang=ko`, `?lang=ja`를 붙이면 해당 언어로 열립니다.
+
 ## 만든 이유
 
 캐릭터 영상을 스프라이트로 만드는 작업을 하다 보니, 이런 도구가 있으면 편하겠어서 만들었습니다. 직접 쓰면서 조금씩 다듬은 개인 작업 도구인데, 비슷한 작업을 하는 분들에게도 도움이 될까 해서 공유합니다.
@@ -26,7 +32,7 @@
 
 ### macOS
 
-1. [릴리스 ZIP](https://github.com/JongSeok-327/js-spritebake/releases/tag/v1.0.0)을 받아 압축을 풉니다.
+1. [릴리스 ZIP](https://github.com/JongSeok-327/js-spritebake/releases/latest)을 받아 압축을 풉니다.
 2. **터미널**을 열고 `cd `(뒤에 공백 한 칸)를 입력한 뒤, 압축을 푼 폴더를 터미널 창으로 끌어다 놓고 Return을 누릅니다.
 3. 실행합니다.
 
@@ -43,7 +49,7 @@ Finder에서 `start.command`를 더블클릭해도 됩니다. 서명되지 않�
 ### Windows
 
 1. [python.org](https://www.python.org/downloads/)에서 Python 3.9 이상을 설치합니다. 설치 화면에서 **Add python.exe to PATH**를 체크하세요.
-2. [릴리스 ZIP](https://github.com/JongSeok-327/js-spritebake/releases/tag/v1.0.0)을 받아 **폴더 전체를 압축 해제**합니다. ZIP 안에서 바로 실행하면 동작하지 않습니다.
+2. [릴리스 ZIP](https://github.com/JongSeok-327/js-spritebake/releases/latest)을 받아 **폴더 전체를 압축 해제**합니다. ZIP 안에서 바로 실행하면 동작하지 않습니다.
 3. **`start.cmd`를 더블클릭**합니다. `py -3` 또는 `python`을 찾아 실행하고 브라우저를 엽니다.
 4. 작업하는 동안 명령 창을 열어 두고, 끝낼 때는 그 창에서 **Ctrl+C**를 누르세요.
 
@@ -51,10 +57,10 @@ Python이 이미 있다면 프로젝트 폴더에서 `python3 server.py`(macOS) 
 
 ## 편집 화면 사용법
 
-1. **영상 파일 열기**: 영상을 고르거나 끌어다 놓습니다. MP4(H.264)와 WebM이 가장 잘 됩니다.
+1. **영상 파일 열기**: 영상을 고르거나 끌어다 놓습니다. **샘플 영상으로 시작**으로 바로 체험할 수도 있습니다. MP4(H.264)와 WebM이 가장 잘 됩니다.
 2. **시작 / 끝**, **추출 프레임 수**: 처음에는 첫 1초, 12프레임입니다. 걷기라면 한 걸음 주기 전체를 고르세요. 끝 시점은 뽑지 않으므로 반복 영상의 첫 자세가 두 번 들어가지 않습니다.
 3. **프레임 추출**을 누릅니다.
-4. **배경 제거**: 색을 지정하거나 **원본에서 색 찍기**로 배경을 클릭합니다. 가장자리에 초록이 남으면 번짐 억제나 허용 범위를 올리고, 캐릭터 일부가 사라지면 허용 범위를 낮추세요. 밝은 배경과 어두운 배경에서 모두 확인하세요.
+4. **배경 제거**: 색을 지정하거나 **원본에서 색 찍기**로 배경을 클릭합니다. 가장자리에 초록이 남으면 **배경색 번짐 줄이기**나 **제거 범위**를 올리고, 캐릭터 일부가 사라지면 **제거 범위**를 낮추세요. 밝은 배경과 어두운 배경에서 모두 확인하세요.
 5. ‹ › 버튼, 이전 프레임 겹치기, 체크박스로 프레임을 살펴봅니다. X/Y 값으로 선택한 프레임 위치를 옮길 수 있고, **출력 시트**에서 저장될 배치를 미리 봅니다.
 6. **중복 후보**는 거의 같은 인접 프레임을 알려 줍니다. 후보를 누르면 두 프레임을 번갈아 비교하고, **후보 제외**로 합치고 **되돌리기**로 복원합니다. 합친 프레임의 시간은 앞 프레임에 더해집니다.
 7. **PNG 시트** 또는 **전체 ZIP 저장**으로 저장합니다.
@@ -65,7 +71,7 @@ Python이 이미 있다면 프로젝트 폴더에서 `python3 server.py`(macOS) 
 
 ## 저장 파일
 
-![출력 시트 화면](preview-sheet.png)
+![출력 시트 화면](docs/assets/sheet-en.png)
 
 | 파일 | 내용 |
 | --- | --- |
@@ -158,13 +164,13 @@ node cli.mjs walk.mp4 --preset walk-settings.json       # 편집 화면에서 �
 빌드나 `pip`/`npm install`이 필요 없습니다.
 
 ```sh
-npm run check && npm test                                  # 문법 + 핵심 로직 (Node 22+)
+npm run check && npm test                                  # 문법, 핵심 로직, 번역 (Node 22+)
 python3 -m unittest discover -s tests -p "test_*.py"       # 서버 보안 경계
 node tests/browser-check.mjs http://127.0.0.1:8765         # 편집 화면 + CLI 전체 검사 (서버 실행 중)
 ```
 
-브라우저 검사는 테스트 영상을 직접 만들고 임시 파일을 git에서 제외된 `.qa/`에 저장합니다. Chrome이 기본 위치에 없으면 `SPRITE_TEST_BROWSER`를 지정하세요. README 스크린샷은 실제 영상으로 갱신합니다: `node tests/capture-previews.mjs http://127.0.0.1:8765 <video> [start] [end] [frames]`. [CONTRIBUTING.md](CONTRIBUTING.md)도 참고하세요.
+브라우저 검사는 테스트 영상을 직접 만들고 임시 파일을 git에서 제외된 `.qa/`에 저장합니다. Chrome이 기본 위치에 없으면 `SPRITE_TEST_BROWSER`를 지정하세요. README 스크린샷은 내장 샘플로 갱신합니다: `node tests/capture-previews.mjs http://127.0.0.1:8765`. 화면 문구는 `dist/i18n.js`에 있습니다. [CONTRIBUTING.md](CONTRIBUTING.md)도 참고하세요.
 
 ## 라이선스와 참고
 
-[MIT](LICENSE). 이 프로젝트의 코드와 문서에 적용되며, 불러온 영상이나 캐릭터에는 적용되지 않습니다. 참고 자료는 [ACKNOWLEDGEMENTS.md](ACKNOWLEDGEMENTS.md), 변경 내역은 [CHANGELOG.md](CHANGELOG.md)에 있습니다.
+[MIT](LICENSE). 이 프로젝트의 코드, 문서, 내장 샘플 파일에 적용되며, 불러온 영상이나 캐릭터에는 적용되지 않습니다. 콩 캐릭터의 권리는 제작자에게 있습니다. [docs/SAMPLES.md](docs/SAMPLES.md)를 참고하세요. 참고 자료는 [ACKNOWLEDGEMENTS.md](ACKNOWLEDGEMENTS.md), 변경 내역은 [CHANGELOG.md](CHANGELOG.md)에 있습니다.

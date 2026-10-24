@@ -3,6 +3,7 @@ __pycache__/
 *.pyc
 dist/samples/*.mp4
 dist/samples/*.webm
+!dist/samples/walk-demo.mp4
 .DS_Store
 Thumbs.db
 .env

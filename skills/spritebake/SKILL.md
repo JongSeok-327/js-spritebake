@@ -19,7 +19,7 @@ Requirements: Node.js 22+ and desktop Chrome or Edge. Check with `node --version
 node <repo>/cli.mjs <video> [options]
 ```
 
-Progress goes to stderr; the only stdout line is the output file path. Exit code 1 means failure, and the message after `spritebake:` says why (the app's own messages are Korean; translate them for the user).
+Progress goes to stderr; the only stdout line is the output file path. Exit code 1 means failure, and the message after `spritebake:` says why.
 
 | Option | Meaning | Default |
 | --- | --- | --- |

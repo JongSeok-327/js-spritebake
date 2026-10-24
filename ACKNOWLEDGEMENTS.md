@@ -8,3 +8,5 @@ JS SpriteBake is a separately implemented application. No source files or applic
 The runtime uses the Python standard library and browser APIs. It does not require third-party JavaScript or Python packages, CDN resources, or model services. Common algorithms and file formats are not claimed as exclusive inventions.
 
 The MIT license covers this project's code and documentation. It does not grant rights to videos, characters, fonts supplied by an operating system, trademarks, or other assets a user imports. Research references are not affiliations or endorsements.
+
+The bundled sample shows Kong, a character drawn by the author for the game *kong-survivors*. The sample video, demo GIF and screenshots are MIT-licensed project files; their source and preparation are documented in [docs/SAMPLES.md](docs/SAMPLES.md).

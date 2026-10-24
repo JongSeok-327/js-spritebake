@@ -1,13 +1,17 @@
 # Changelog
 
-## Unreleased
+## 1.1.0
 
+- Add English, Korean and Japanese interfaces, including help, status messages and accessibility labels.
+- Follow the browser language on first use and support explicit `?lang=en`, `?lang=ko` and `?lang=ja` links. Switching language retains video and frame edits without cookies or localStorage.
+- Include a 2-second walking sample (Kong from *kong-survivors*) and a one-click sample workflow that extracts and previews 8 frames.
+- Show an animated input/output comparison and editor screenshots in all three READMEs, with sample provenance and licensing. `tests/capture-previews.mjs` regenerates the screenshots; browser checks no longer overwrite them.
 - Add a command-line interface (`cli.mjs`) that runs the editor pipeline in headless Chrome/Edge.
 - Add a Claude Code plugin with a `spritebake` skill that drives the CLI.
 - Lower the minimum Python version to 3.9 so macOS's bundled `python3` works; `start.command` prefers a newer Python when installed.
 - Add macOS system fonts and a favicon. `npm start` works on macOS.
-- README screenshots now show a kong-survivors character walk; `tests/capture-previews.mjs` regenerates them, and browser checks no longer overwrite them.
-- Rewrite the English, Korean and Japanese READMEs around quick start, CLI and skill usage.
+- Rewrite the READMEs around quick start, sample, CLI and skill usage.
+- Verify sample seeking through a local Blob, translation completeness, preserved edits and responsive layouts.
 
 ## 1.0.0
 

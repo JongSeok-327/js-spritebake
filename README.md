@@ -4,11 +4,15 @@
 
 English · [한국어](README.ko.md) · [日本語](README.ja.md)
 
-[Download v1.0.0](https://github.com/JongSeok-327/js-spritebake/releases/tag/v1.0.0) · MIT · no API key · your video never leaves your computer
+[Download v1.1.0](https://github.com/JongSeok-327/js-spritebake/releases/tag/v1.1.0) · MIT · no API key · your video never leaves your computer
 
-![JS SpriteBake editor](preview.png)
+![Source video and exported transparent sprites](docs/assets/demo.gif)
 
 Pick a range from a video of your character on a solid background. JS SpriteBake samples evenly spaced frames, removes the background, keeps one crop and scale across the whole animation, and saves a transparent PNG sheet. You can also save a ZIP with individual frames and per-frame timing for your game engine.
+
+[![JS SpriteBake editor](docs/assets/editor-en.png)](docs/assets/editor-en.png)
+
+**No footage yet?** Start the editor and click **Try sample video**. It loads the bundled 2-second clip of Kong, the hero of my game *kong-survivors*, extracts one walk cycle and plays it. See [sample details](docs/SAMPLES.md).
 
 There are three ways to use it:
 
@@ -18,7 +22,7 @@ There are three ways to use it:
 | [**Command line**](#command-line) | Repeating the same settings, scripts, batch work | Node.js 22+ · Chrome or Edge |
 | [**Claude Code skill**](#claude-code-skill) | "Make a sprite sheet from this clip" in plain language | Claude Code · Node.js 22+ · Chrome or Edge |
 
-The editor screens are in Korean. This guide labels each button with its English meaning.
+The editor is available in **English, 한국어 and 日本語**. Use the selector at the top right; your video and edits stay in place. The first visit follows your browser language, and `?lang=en`, `?lang=ko` or `?lang=ja` opens a specific one.
 
 ## Why I made this
 
@@ -28,7 +32,7 @@ I kept turning character videos into sprites while working on my projects, and t
 
 ### macOS
 
-1. Download the [release ZIP](https://github.com/JongSeok-327/js-spritebake/releases/tag/v1.0.0) and extract it.
+1. Download the [release ZIP](https://github.com/JongSeok-327/js-spritebake/releases/latest) and extract it.
 2. Open **Terminal**, type `cd ` (with a space), drag the extracted folder onto the window, and press Return.
 3. Run:
 
@@ -45,7 +49,7 @@ You can also double-click `start.command` in Finder. Because the script is not s
 ### Windows
 
 1. Install Python 3.9+ from [python.org](https://www.python.org/downloads/). Tick **Add python.exe to PATH** in the installer.
-2. Download the [release ZIP](https://github.com/JongSeok-327/js-spritebake/releases/tag/v1.0.0) and **extract the whole folder**. Running it from inside the ZIP does not work.
+2. Download the [release ZIP](https://github.com/JongSeok-327/js-spritebake/releases/latest) and **extract the whole folder**. Running it from inside the ZIP does not work.
 3. Double-click **`start.cmd`**. It finds `py -3` or `python` and opens your browser.
 4. Keep the command window open while you work. Press **Ctrl+C** in it to stop.
 
@@ -53,21 +57,21 @@ Already have Python? From the project folder you can run `python3 server.py` (ma
 
 ## Using the editor
 
-1. **영상 파일 열기** (Open video): choose or drag in a video. MP4 (H.264) and WebM work best.
-2. **시작 / 끝** (Start / End) and **추출 프레임 수** (Frame count): the range starts as the first second with 12 frames. For a walk, pick one full step cycle. The end time is not sampled, so a looping clip does not repeat its first pose.
-3. **프레임 추출** (Extract frames).
-4. **배경 제거** (Background removal): set the color, or use **원본에서 색 찍기** (pick from video) and click the background. If edges stay green, raise spill suppression or tolerance. If parts of the character vanish, lower tolerance. Check the result against both light and dark preview backgrounds.
-5. Review frames with ‹ ›, onion skin and the checkboxes. X/Y fields nudge the selected frame. **출력 시트** (Output sheet) previews the saved layout.
-6. **중복 후보** (Duplicate candidates) suggests adjacent frames that look the same. Click a pair to compare it, **후보 제외** (Exclude candidates) to merge, **되돌리기** (Undo) to restore. A merged frame's time goes to the frame before it.
-7. Save with **PNG 시트** (PNG sheet) or **전체 ZIP 저장** (Save all as ZIP).
+1. **Open video**: choose or drag in a video, or click **Try sample video**. MP4 (H.264) and WebM work best.
+2. **Start / End** and **Frame count**: the range starts as the first second with 12 frames. For a walk, pick one full step cycle. The end time is not sampled, so a looping clip does not repeat its first pose.
+3. **Extract frames**.
+4. **Background removal**: set the color, or use **Pick from video** and click the background. If edges stay green, raise spill suppression or tolerance. If parts of the character vanish, lower tolerance. Check the result against both light and dark preview backgrounds.
+5. Review frames with ‹ ›, onion skin and the checkboxes. X/Y fields nudge the selected frame. **Output sheet** previews the saved layout.
+6. **Duplicate candidates** suggests adjacent frames that look the same. Click a pair to compare it, **Exclude candidates** to merge, **Undo** to restore. A merged frame's time goes to the frame before it.
+7. Save with **PNG sheet** or **Download ZIP**.
 
-Work is not saved automatically. To continue later, use **설정 저장** (Save settings). Next time, open the same video, load the settings, and extract again.
+Work is not saved automatically. To continue later, use **Save settings**. Next time, open the same video, load the settings, and extract again.
 
 **Tips for source video:** keep the camera still, show the whole body with space around weapons or accessories, and use one even background color that does not appear on the character. Walking in place is easiest when your game moves the character itself.
 
 ## Output files
 
-![Output sheet view](preview-sheet.png)
+![Output sheet view](docs/assets/sheet-en.png)
 
 | File | Contents |
 | --- | --- |
@@ -160,13 +164,13 @@ Details are in [SECURITY.md](SECURITY.md).
 No build step and no `pip`/`npm install` are needed.
 
 ```sh
-npm run check && npm test                                  # syntax + core logic (Node 22+)
+npm run check && npm test                                  # syntax, core logic, translations (Node 22+)
 python3 -m unittest discover -s tests -p "test_*.py"       # server boundaries
 node tests/browser-check.mjs http://127.0.0.1:8765         # full editor + CLI check, server running
 ```
 
-The browser check generates its own test video and writes temporary files to the ignored `.qa/` folder. Set `SPRITE_TEST_BROWSER` for a nonstandard Chrome path. README screenshots come from a real clip: `node tests/capture-previews.mjs http://127.0.0.1:8765 <video> [start] [end] [frames]`. See [CONTRIBUTING.md](CONTRIBUTING.md).
+The browser check generates its own test video and writes temporary files to the ignored `.qa/` folder. Set `SPRITE_TEST_BROWSER` for a nonstandard Chrome path. README screenshots come from the bundled sample: `node tests/capture-previews.mjs http://127.0.0.1:8765`. UI text lives in `dist/i18n.js`. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License and credits
 
-[MIT](LICENSE). The license covers this project's code and documentation, not the videos or characters you import. Research references are listed in [ACKNOWLEDGEMENTS.md](ACKNOWLEDGEMENTS.md), and release notes are in [CHANGELOG.md](CHANGELOG.md).
+[MIT](LICENSE). The license covers this project's code, documentation and bundled sample files, not the videos or characters you import. The Kong character belongs to the author; see [docs/SAMPLES.md](docs/SAMPLES.md). Research references are listed in [ACKNOWLEDGEMENTS.md](ACKNOWLEDGEMENTS.md), and release notes are in [CHANGELOG.md](CHANGELOG.md).
