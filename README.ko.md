@@ -57,6 +57,8 @@ Python이 이미 있다면 프로젝트 폴더에서 `python3 server.py`(macOS) 
 
 ## 편집 화면 사용법
 
+![사용 과정: 샘플 영상, 프레임 추출, 배경 확인, 출력 시트, ZIP 저장](docs/assets/walkthrough-ko.gif)
+
 1. **영상 파일 열기**: 영상을 고르거나 끌어다 놓습니다. **샘플 영상으로 시작**으로 바로 체험할 수도 있습니다. MP4(H.264)와 WebM이 가장 잘 됩니다.
 2. **시작 / 끝**, **추출 프레임 수**: 처음에는 첫 1초, 12프레임입니다. 걷기라면 한 걸음 주기 전체를 고르세요. 끝 시점은 뽑지 않으므로 반복 영상의 첫 자세가 두 번 들어가지 않습니다.
 3. **프레임 추출**을 누릅니다.
@@ -169,7 +171,7 @@ python3 -m unittest discover -s tests -p "test_*.py"       # 서버 보안 경�
 node tests/browser-check.mjs http://127.0.0.1:8765         # 편집 화면 + CLI 전체 검사 (서버 실행 중)
 ```
 
-브라우저 검사는 테스트 영상을 직접 만들고 임시 파일을 git에서 제외된 `.qa/`에 저장합니다. Chrome이 기본 위치에 없으면 `SPRITE_TEST_BROWSER`를 지정하세요. README 스크린샷은 내장 샘플로 갱신합니다: `node tests/capture-previews.mjs http://127.0.0.1:8765`. 화면 문구는 `dist/i18n.js`에 있습니다. [CONTRIBUTING.md](CONTRIBUTING.md)도 참고하세요.
+브라우저 검사는 테스트 영상을 직접 만들고 임시 파일을 git에서 제외된 `.qa/`에 저장합니다. Chrome이 기본 위치에 없으면 `SPRITE_TEST_BROWSER`를 지정하세요. README 스크린샷은 내장 샘플로 갱신합니다: `node tests/capture-previews.mjs http://127.0.0.1:8765`. 사용 과정 GIF는 `node tests/capture-walkthrough.mjs <URL> <lang>` 후 `python3 tests/make-walkthrough-gif.py <lang>`(Pillow 필요)로 만듭니다. 화면 문구는 `dist/i18n.js`에 있습니다. [CONTRIBUTING.md](CONTRIBUTING.md)도 참고하세요.
 
 ## 라이선스와 참고
 

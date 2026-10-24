@@ -10,7 +10,7 @@
 - Add a Claude Code plugin with a `spritebake` skill that drives the CLI.
 - Lower the minimum Python version to 3.9 so macOS's bundled `python3` works; `start.command` prefers a newer Python when installed.
 - Add macOS system fonts and a favicon. `npm start` works on macOS.
-- Rewrite the READMEs around quick start, sample, CLI and skill usage.
+- Rewrite the READMEs around quick start, sample, CLI and skill usage, with a walkthrough GIF per language.
 - Verify sample seeking through a local Blob, translation completeness, preserved edits and responsive layouts.
 
 ## 1.0.0
