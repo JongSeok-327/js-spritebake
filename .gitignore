@@ -1,0 +1,13 @@
+.qa/
+__pycache__/
+*.pyc
+dist/samples/*.mp4
+dist/samples/*.webm
+.DS_Store
+Thumbs.db
+.env
+.env.*
+!.env.example
+*.log
+node_modules/
+release/

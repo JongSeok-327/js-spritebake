@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0b0c0e">
+  <meta name="description" content="내 영상으로 만드는 투명 스프라이트. 구간 선택, 배경 제거, 애니메이션 미리보기와 PNG 내보내기.">
+  <title>JS SpriteBake · Video to sprite sheets</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="./"><svg class="brand-icon" width="21" height="21" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="4" stroke="currentColor" stroke-width="1.5"/><path d="M9 4v16M4 9h16M14.5 14.5h2v2h-2z" stroke="currentColor" stroke-width="1.5"/></svg>JS SpriteBake <small>1.0</small></a>
+    <div class="header-right"><span class="local-badge">로컬 작업</span><button id="reset-settings" class="subtle" title="현재 영상의 첫 1초를 기본 설정으로 다시 추출합니다. 프레임 제외와 위치 수정도 초기화됩니다.">설정 초기화</button><button id="help-button" class="subtle">사용법</button></div>
+  </header>
+  <main class="workspace">
+    <aside class="sidebar">
+      <section class="settings-section">
+        <div class="section-heading"><span class="step">01</span><h2>원본 영상</h2></div>
+        <label id="drop-zone" class="drop-zone" for="file-input"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="4.5" width="18" height="15" rx="3" stroke="currentColor" stroke-width="1.3"/><path d="m10 9 5 3-5 3V9Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg><strong>영상 파일 열기</strong><span>클릭하거나 파일을 끌어 놓으세요</span><small>MP4 · WebM</small></label>
+        <input id="file-input" type="file" accept="video/*,.mp4,.webm,.mov" hidden>
+        <div id="file-info" class="file-info" hidden><strong id="file-name"></strong><small id="file-meta"></small></div>
+      </section>
+      <section class="settings-section">
+        <div class="section-heading"><span class="step">02</span><h2>구간과 프레임</h2></div>
+        <div class="two-fields"><label>시작 (초)<input id="start-time" type="number" min="0" step="0.01" value="0"></label><label>끝 (초)<input id="end-time" type="number" min="0" step="0.01" value="1"></label></div>
+        <div class="two-fields compact"><button id="set-start" class="subtle">현재 위치를 시작으로</button><button id="set-end" class="subtle">현재 위치를 끝으로</button></div>
+        <div class="two-fields"><label>추출 프레임 수<input id="frame-count" type="number" min="2" max="64" step="1" value="12"></label><label>처리 해상도<select id="resolution"><option value="512">최대 512 px</option><option value="1024" selected>최대 1024 px</option><option value="2048">최대 2048 px</option></select></label></div>
+        <div class="two-fields compact"><button id="one-second" class="subtle">첫 1초 / 12프레임</button><button id="full-range" class="subtle">전체 구간</button></div>
+        <p class="hint">기본은 첫 1초입니다. 걷기 한 주기에 맞춰 시작과 끝을 조절하세요.</p>
+        <button id="extract-button" class="primary full" disabled>프레임 추출</button>
+        <button id="cancel-button" class="subtle full" hidden>처리 취소</button>
+        <p id="stale-warning" class="warning" hidden>구간·개수가 바뀌었습니다. 다시 추출해 주세요.</p>
+      </section>
+      <section class="settings-section">
+        <div class="section-heading"><span class="step">03</span><h2>배경 제거</h2><label class="switch"><input id="key-enabled" type="checkbox" checked aria-label="배경 제거 켜기"><span></span></label></div>
+        <div class="color-row"><label class="color-picker"><input id="key-color" type="color" value="#00ff00" aria-label="제거할 배경색"><span id="color-value">#00FF00</span></label><button id="pick-color" class="subtle" aria-pressed="false">원본에서 색 찍기</button></div>
+        <label class="slider-label" for="tolerance">제거 범위 <output id="tolerance-value">30</output></label><input id="tolerance" type="range" min="1" max="60" value="30">
+        <label class="slider-label" for="softness">가장자리 부드러움 <output id="softness-value">8</output></label><input id="softness" type="range" min="0" max="20" value="8">
+        <label class="slider-label" for="despill">배경색 번짐 줄이기 <output id="despill-value">75</output></label><input id="despill" type="range" min="0" max="100" value="75">
+        <p class="hint">설정을 바꾸면 추출한 프레임에 반영됩니다.</p>
+      </section>
+      <section class="settings-section last">
+        <div class="section-heading"><span class="step">04</span><h2>크기와 저장</h2></div>
+        <div class="two-fields"><label>한 칸 크기<select id="cell-size"><option value="128">128 × 128</option><option value="256" selected>256 × 256</option><option value="512">512 × 512</option><option value="1024">1024 × 1024</option></select></label><label>시트 열 개수<input id="columns" type="number" min="1" max="16" value="4"></label></div>
+        <label class="check-label"><input id="crop-content" type="checkbox" checked> 캐릭터에 맞춰 공통 여백 줄이기</label>
+        <p class="hint">모든 프레임에 같은 영역·배율을 적용합니다.</p>
+        <div class="preset-row"><button id="save-preset" class="subtle">설정 저장</button><button id="load-preset" class="subtle">설정 불러오기</button></div>
+        <input id="preset-input" type="file" accept="application/json,.json" hidden>
+      </section>
+    </aside>
+    <section class="editor">
+      <div class="editor-heading"><div class="document-title"><svg width="18" height="21" viewBox="0 0 18 21" fill="none" aria-hidden="true"><path d="M10.5 1.5h-7A2 2 0 0 0 1.5 3.5v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-10l-6-6Z" stroke="currentColor" stroke-width="1.2"/><path d="M10 2v6h6M5 12h7M5 15.5h5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg><div><span class="document-kicker">스프라이트 작업</span><h1 id="document-name">영상 없음</h1></div></div><span id="project-status" class="status-pill">준비 중</span></div>
+      <div class="preview-grid">
+        <section class="preview-card">
+          <div class="card-heading"><h2><span class="dot neutral"></span>원본 영상</h2><span id="source-dimensions" class="mono">—</span></div>
+          <div id="source-stage" class="source-stage"><video id="source-video" playsinline muted preload="auto"></video><div id="source-empty" class="stage-empty">영상을 불러오면 여기에 표시됩니다.</div><span id="pick-hint" class="stage-label" hidden>배경을 클릭해 색을 선택하세요</span></div>
+          <div class="source-controls"><button id="source-play" class="icon-button" aria-label="원본 재생" disabled>▶</button><input id="source-scrub" type="range" min="0" max="1" step="0.001" value="0" aria-label="원본 재생 위치" disabled><span id="source-time" class="mono">0.00 / 0.00</span></div>
+        </section>
+        <section class="preview-card">
+          <div class="card-heading"><div class="view-tabs" aria-label="결과 보기"><button id="view-animation" aria-pressed="true" class="active">애니메이션</button><button id="view-sheet" aria-pressed="false">출력 시트</button></div><div class="background-options" aria-label="미리보기 배경"><button data-bg="checker" class="swatch checker active" title="투명 격자" aria-label="투명 격자" aria-pressed="true"></button><button data-bg="light" class="swatch light" title="밝은 배경" aria-label="밝은 배경" aria-pressed="false"></button><button data-bg="dark" class="swatch dark" title="어두운 배경" aria-label="어두운 배경" aria-pressed="false"></button><button data-bg="game" class="swatch game" title="녹색 배경" aria-label="녹색 배경" aria-pressed="false"></button></div></div>
+          <div id="result-stage" class="result-stage checker"><canvas id="preview-canvas" width="512" height="512" aria-label="추출한 스프라이트 애니메이션"></canvas><div id="result-empty" class="stage-empty"><span class="empty-symbol">▧</span>프레임을 추출하면<br>이곳에서 움직임을 확인할 수 있어요.</div><span id="preview-frame-label" class="stage-label" hidden></span></div>
+          <div class="preview-controls"><button id="previous-frame" class="icon-button" aria-label="이전 프레임" disabled>‹</button><button id="preview-play" class="play-button" aria-label="스프라이트 재생" disabled>▶ 재생</button><button id="next-frame" class="icon-button" aria-label="다음 프레임" disabled>›</button><label class="fps-label"><input id="playback-fps" type="number" min="0.5" max="60" step="0.1" value="12" aria-label="재생 FPS"> FPS</label><label class="check-label"><input id="loop" type="checkbox" checked> 반복</label></div>
+          <div class="preview-options"><label class="check-label"><input id="onion-skin" type="checkbox"> 이전 프레임 겹치기</label><label class="check-label"><input id="show-guides" type="checkbox"> 기준선</label><span id="pixel-size-label" class="mono">256 × 256 px</span></div>
+        </section>
+      </div>
+      <div class="progress-area" aria-live="polite"><div class="progress-heading"><span id="progress-text">영상 파일을 불러와 시작하세요. 영상은 이 브라우저에서 처리됩니다.</span><span id="progress-percent" class="mono"></span></div><progress id="progress" max="100" value="0" hidden></progress></div>
+      <section class="frames-panel">
+        <div class="frames-heading"><div><h2>추출 프레임 <span id="frame-total" class="count">0</span></h2><p id="extraction-diagnostics">프레임을 선택하면 원본 위치도 함께 이동합니다.</p></div><div class="frame-actions"><button id="toggle-grid" class="subtle" aria-pressed="true">가로 목록</button><button id="select-all" class="subtle" disabled>모두 포함</button><button id="compare-seam" class="subtle" disabled>처음 ↔ 끝 비교</button></div></div>
+        <p id="sampling-warning" class="warning" hidden></p>
+        <div id="frame-strip" class="frame-strip"><div class="frames-empty">선택한 구간의 프레임이 여기에 모입니다.</div></div>
+        <div class="frame-adjustments"><span id="selected-label">선택한 프레임 없음</span><div><label>X <input id="offset-x" type="number" min="-1024" max="1024" value="0" aria-label="선택 프레임 가로 이동"></label><label>Y <input id="offset-y" type="number" min="-1024" max="1024" value="0" aria-label="선택 프레임 세로 이동"></label><span class="muted">px</span><button id="reset-offset" class="subtle">위치 초기화</button></div></div>
+        <p id="frame-warning" class="warning" hidden></p>
+        <section class="duplicate-tools" aria-label="중복 프레임 검사"><div class="duplicate-toolbar"><strong>중복 후보</strong><label>허용 차이 <input id="duplicate-threshold" type="number" min="0" max="8" step="0.5" value="2"> %</label><button id="analyze-duplicates" class="subtle" disabled>검사</button><button id="apply-duplicates" class="subtle" disabled>후보 제외</button><button id="undo-duplicates" class="subtle" disabled>되돌리기</button></div><p id="duplicate-summary">이웃한 프레임의 캐릭터와 하체를 비교합니다. 후보 제외 시 재생 시간을 유지합니다.</p><div id="duplicate-list" class="duplicate-list"></div><div id="duplicate-history" class="duplicate-history" hidden><span>적용 내역 · 번호를 눌러 제외한 프레임 확인</span><div id="duplicate-applied-list" class="duplicate-list"></div></div></section>
+      </section>
+      <section class="export-panel"><div><h2>내보내기</h2><p id="export-summary">PNG 시트 · 개별 PNG · 프레임 정보 JSON</p></div><div class="export-actions"><button id="export-sheet" class="secondary" disabled>PNG 시트</button><button id="export-zip" class="primary" disabled>전체 ZIP 저장</button></div></section>
+      <footer class="editor-footer"><span>외부 업로드 없음</span><span>← → 프레임 이동 · Space 재생/정지</span></footer>
+    </section>
+  </main>
+  <div id="toast" role="status" hidden></div>
+  <dialog id="help-dialog"><button id="close-help" class="dialog-close icon-button" aria-label="닫기">×</button><h2>사용 방법</h2><ol><li>영상을 열고 걷기 한 주기의 시작·끝을 정합니다. 기본은 첫 1초입니다.</li><li>프레임 수를 정하고 <strong>프레임 추출</strong>을 누릅니다.</li><li>배경 제거 강도를 조절하고 밝고 어두운 배경에서 확인합니다.</li><li>‹ › 버튼과 ‘이전 프레임 겹치기’로 자세 차이를 봅니다.</li><li>중복 후보의 번호를 누르면 두 프레임을 비교할 수 있습니다. ‘후보 제외’로 적용하고 ‘되돌리기’로 복원합니다.</li><li>‘출력 시트’에서 저장 배치를 확인한 뒤 PNG 또는 ZIP을 저장합니다.</li></ol><p>중복 후보 제외는 앞 프레임에 시간을 합칩니다. 게임에서도 같은 속도로 재생하려면 ZIP의 JSON에 있는 프레임별 durationMs를 사용하세요. 직접 체크를 해제하면 해당 시간도 제거됩니다.</p><p>설정 초기화는 현재 영상의 첫 1초를 기본 설정으로 다시 추출하며, 제외·위치·시간 수정도 초기화합니다. 기준선·프레임 번호·겹치기는 저장 PNG에 들어가지 않습니다.</p><p>같은 영상을 불러온 뒤 설정 JSON을 적용하고 다시 추출하면 이전 작업을 복원합니다. 자동 걷기 주기 탐지와 AI 배경 제거는 포함하지 않습니다.</p></dialog>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
