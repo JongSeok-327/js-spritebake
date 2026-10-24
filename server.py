@@ -87,8 +87,8 @@ class LocalHandler(http.server.SimpleHTTPRequestHandler):
 
 
 def main():
-    if sys.version_info < (3, 11):
-        raise SystemExit('Python 3.11 or newer is required: https://www.python.org/downloads/')
+    if sys.version_info < (3, 9):
+        raise SystemExit('Python 3.9 or newer is required: https://www.python.org/downloads/')
     parser = argparse.ArgumentParser(description='JS SpriteBake local server')
     parser.add_argument('--port', type=int, default=8765)
     parser.add_argument('--no-browser', action='store_true')

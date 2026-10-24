@@ -9,4 +9,4 @@ The runtime uses the Python standard library and browser APIs. It does not requi
 
 The MIT license covers this project's code and documentation. It does not grant rights to videos, characters, fonts supplied by an operating system, trademarks, or other assets a user imports. Research references are not affiliations or endorsements.
 
-The bundled geometric walking video, demo GIF and screenshots were created specifically for this project and are MIT-licensed. Their source and preparation are documented in [docs/SAMPLES.md](docs/SAMPLES.md). No personal character videos are bundled.
+The bundled sample shows Kong, a character drawn by the author for the game *kong-survivors*. The sample video, demo GIF and screenshots are MIT-licensed project files; their source and preparation are documented in [docs/SAMPLES.md](docs/SAMPLES.md).

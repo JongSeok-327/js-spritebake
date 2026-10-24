@@ -462,10 +462,10 @@ function undoCandidates() {
   state.duplicateUndo = null; state.duplicateApplied = state.duplicateUndoApplied; state.duplicateUndoApplied = []; renderDuplicateHistory(); renderStrip(); renderPreview(); analyzeDuplicates();
   toast(t("m153"));
 }
-async function resetSettings() {
+async function resetSettings(overrides = {}) {
   if (state.busy) return;
   clearTimeout(keyTimer); keyTimer = null; stopPlayback(); setPicking(false);
-  const defaults = { 'start-time': 0, 'end-time': state.loaded ? Math.min(1, video.duration) : 1, 'frame-count': 12, resolution: 1024, 'key-color': '#00ff00', tolerance: 30, softness: 8, despill: 75, 'cell-size': 256, columns: 4, 'playback-fps': 12, 'duplicate-threshold': 2 };
+  const defaults = { 'start-time': 0, 'end-time': state.loaded ? Math.min(1, video.duration) : 1, 'frame-count': 12, resolution: 1024, 'key-color': '#00ff00', tolerance: 30, softness: 8, despill: 75, 'cell-size': 256, columns: 4, 'playback-fps': 12, 'duplicate-threshold': 2, ...overrides };
   for (const [id, value] of Object.entries(defaults)) $(id).value = value;
   for (const id of ['key-enabled', 'crop-content', 'loop']) $(id).checked = true;
   $('show-guides').checked = false; $('onion-skin').checked = false;
@@ -616,7 +616,8 @@ $('load-sample').addEventListener('click', async () => {
     const blob = await response.blob();
     setBusy(false);
     await loadVideo(URL.createObjectURL(blob), 'walk-demo.mp4', { objectURL: true });
-    if (state.loaded) { await resetSettings(); if (included().length) play(); }
+    // The bundled walk is one 8-pose cycle per second.
+    if (state.loaded) { await resetSettings({ 'frame-count': 8 }); if (included().length) play(); }
   } catch { report(t('sampleFailed')); toast(t('sampleFailed')); }
   finally { setBusy(false); }
 });
@@ -628,7 +629,7 @@ $('language-select').addEventListener('change', event => {
   $('source-play').setAttribute('aria-label', video.paused ? t('m087') : t('m176'));
   $('toggle-grid').textContent = $('frame-strip').classList.contains('horizontal') ? t('m173') : t('m053');
 });
-$('reset-settings').addEventListener('click', resetSettings);
+$('reset-settings').addEventListener('click', () => resetSettings());
 $('analyze-duplicates').addEventListener('click', analyzeDuplicates);
 $('duplicate-threshold').addEventListener('change', analyzeDuplicates);
 $('apply-duplicates').addEventListener('click', applyCandidates);

@@ -24,6 +24,7 @@ The app code contains no analytics, account system, cookies, external font/CDN r
 - Do not put secrets in `dist/`, add external symlinks there, expose the server through a tunnel/port-forward, or change the bind address to a public/LAN interface.
 - Refreshing or closing the tab discards unsaved edits. Downloads are ordinary local files, not encrypted backups.
 - These server protections apply to the supplied launcher/server. Serving the static files through another server can change headers and exposure.
+- The CLI (`cli.mjs`) starts its own short-lived server on `127.0.0.1` with a random port. It serves only `dist/` files to a headless browser that uses a temporary profile, and both stop when the command ends.
 
 ## Reporting a vulnerability
 

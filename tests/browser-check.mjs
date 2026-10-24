@@ -1,4 +1,4 @@
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { readFile, writeFile, mkdir, readdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import assert from 'node:assert/strict';
@@ -77,10 +77,10 @@ try {
   assert.equal(await evaluate('document.querySelectorAll(".frame-tile").length'), 0);
   assert.equal(await evaluate('document.querySelector("#extract-button").disabled'), true);
   await click('load-sample');
-  await until(`${ready} && document.querySelectorAll('.frame-tile').length === 12`, 'bundled sample extraction');
+  await until(`${ready} && document.querySelectorAll('.frame-tile').length === 8`, 'bundled sample extraction');
   await delay(300); await click('preview-play');
   assert.equal(await evaluate('document.querySelector("#file-name").textContent'), 'walk-demo.mp4');
-  assert.ok((await evaluate('document.querySelector("#extraction-diagnostics").textContent')).includes('12/12'));
+  assert.ok((await evaluate('document.querySelector("#extraction-diagnostics").textContent')).includes('8/8'));
   const sampleHashes = await evaluate('[...document.querySelectorAll(".frame-tile")].map(el=>el.dataset.rawHash)');
   await setValue('offset-x', 3);
   await evaluate('document.querySelector(".frame-tile input").click()');
@@ -92,7 +92,7 @@ try {
     assert.equal(await evaluate('document.querySelector("#help-dialog h2").textContent'),help);
     assert.deepEqual(await evaluate('[...document.querySelectorAll(".frame-tile")].map(el=>el.dataset.rawHash)'),sampleHashes);
     assert.equal(await evaluate('document.querySelector("#offset-x").value'),'3');
-    assert.equal(await evaluate('document.querySelectorAll(".frame-tile input:checked").length'),11);
+    assert.equal(await evaluate('document.querySelectorAll(".frame-tile input:checked").length'),7);
     assert.equal(await evaluate('document.querySelector("#file-name").textContent'),'원본 영상');
     assert.equal(await evaluate('document.querySelector("#document-name").textContent'),'원본 영상');
     if(lang!=='ko') assert.equal(await evaluate('/[가-힣]/.test(document.body.innerText.replace("한국어", "").replaceAll("원본 영상", ""))'),false);
@@ -104,11 +104,11 @@ try {
     await setValue('language-select',lang,'change');
     await evaluate('document.activeElement.blur()');
     const demoShot = await call('Page.captureScreenshot',{format:'png',captureBeyondViewport:true});
-    await writeFile(resolve(base,`docs/assets/editor-${lang}.png`),Buffer.from(demoShot.data,'base64'));
+    await writeFile(resolve(qa,`editor-${lang}.png`),Buffer.from(demoShot.data,'base64'));
   }
   await click('view-sheet');
   const demoSheet = await call('Page.captureScreenshot',{format:'png',captureBeyondViewport:true});
-  await writeFile(resolve(base,'docs/assets/sheet-en.png'),Buffer.from(demoSheet.data,'base64'));
+  await writeFile(resolve(qa,'sheet-en.png'),Buffer.from(demoSheet.data,'base64'));
   await click('export-zip'); await waitDownload('walk-demo-sprites.zip'); await until(ready,'sample export');
   await setValue('language-select','ko','change');
   await click('view-animation');
@@ -121,6 +121,10 @@ try {
   assert.equal(await evaluate('document.querySelector("#end-time").value'), '1');
   assert.ok((await evaluate('document.querySelector("#extraction-diagnostics").textContent')).includes('12/12'));
   console.log('PASS empty startup and procedural fixture extraction (12 distinct frames / first second)');
+  const cli = spawnSync(process.execPath, [resolve(base, 'cli.mjs'), fixture, '--format', 'png', '--frames', '4', '--columns', '4', '--cell', '128', '--out', resolve(qa, 'cli')], { encoding: 'utf8' });
+  assert.equal(cli.status, 0, cli.stderr);
+  assert.equal(cli.stdout.trim(), resolve(qa, 'cli', 'walk-test-sheet.png'));
+  console.log('PASS CLI renders the same fixture to a sheet PNG');
   await click('full-range'); await setValue('frame-count', 16); await click('extract-button');
   await until(`${ready} && document.querySelectorAll('.frame-tile').length === 16`, 'full range diagnosis');
   assert.ok((await evaluate('document.querySelector("#extraction-diagnostics").textContent')).includes('16/16'));
@@ -203,7 +207,7 @@ try {
   assert.deepEqual(await evaluate('({w:document.querySelector("#preview-canvas").width,h:document.querySelector("#preview-canvas").height})'), {w:768,h:576});
   await evaluate('document.querySelector("#toast").hidden=true;document.activeElement.blur()');
   const sheetShot = await call('Page.captureScreenshot', { format: 'png', captureBeyondViewport: true });
-  await writeFile(resolve(base, 'preview-sheet.png'), Buffer.from(sheetShot.data, 'base64'));
+  await writeFile(resolve(qa, 'preview-sheet.png'), Buffer.from(sheetShot.data, 'base64'));
   await click('view-animation');
   console.log('PASS frame stepping, onion skin and output sheet layout');
 
@@ -254,7 +258,7 @@ try {
 
   await evaluate('document.querySelector("[data-bg=checker]").click();document.querySelector("#toast").hidden=true;document.activeElement.blur();window.scrollTo(0,0)');
   const shot = await call('Page.captureScreenshot', { format: 'png', captureBeyondViewport: true });
-  await writeFile(resolve(base, 'preview.png'), Buffer.from(shot.data, 'base64'));
+  await writeFile(resolve(qa, 'preview.png'), Buffer.from(shot.data, 'base64'));
   const responsive = [];
   for (const lang of ['en','ja','ko']) {
   await setValue('language-select',lang,'change');
