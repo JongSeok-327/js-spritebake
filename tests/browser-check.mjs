@@ -1,4 +1,4 @@
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { readFile, writeFile, mkdir, readdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import assert from 'node:assert/strict';
@@ -7,6 +7,8 @@ const base = resolve(import.meta.dirname, '..');
 const qa = resolve(base, '.qa');
 const profile = resolve(qa, `chrome-${Date.now()}`);
 const downloads = resolve(qa, `downloads-${Date.now()}`);
+// README screenshots are only refreshed on request: UPDATE_PREVIEWS=1.
+const previews = process.env.UPDATE_PREVIEWS === '1' ? base : qa;
 await mkdir(profile, { recursive: true }); await mkdir(downloads, { recursive: true });
 const url = process.argv[2] || process.env.SPRITE_TEST_URL || 'http://127.0.0.1:8765';
 assert.equal((await fetch(url)).status, 200);
@@ -80,6 +82,10 @@ try {
   assert.equal(await evaluate('document.querySelector("#end-time").value'), '1');
   assert.ok((await evaluate('document.querySelector("#extraction-diagnostics").textContent')).includes('12/12'));
   console.log('PASS empty startup and procedural fixture extraction (12 distinct frames / first second)');
+  const cli = spawnSync(process.execPath, [resolve(base, 'cli.mjs'), fixture, '--format', 'png', '--frames', '4', '--columns', '4', '--cell', '128', '--out', resolve(qa, 'cli')], { encoding: 'utf8' });
+  assert.equal(cli.status, 0, cli.stderr);
+  assert.equal(cli.stdout.trim(), resolve(qa, 'cli', 'walk-test-sheet.png'));
+  console.log('PASS CLI renders the same fixture to a sheet PNG');
   await click('full-range'); await setValue('frame-count', 16); await click('extract-button');
   await until(`${ready} && document.querySelectorAll('.frame-tile').length === 16`, 'full range diagnosis');
   assert.ok((await evaluate('document.querySelector("#extraction-diagnostics").textContent')).includes('16/16'));
@@ -162,7 +168,7 @@ try {
   assert.deepEqual(await evaluate('({w:document.querySelector("#preview-canvas").width,h:document.querySelector("#preview-canvas").height})'), {w:768,h:576});
   await evaluate('document.querySelector("#toast").hidden=true;document.activeElement.blur()');
   const sheetShot = await call('Page.captureScreenshot', { format: 'png', captureBeyondViewport: true });
-  await writeFile(resolve(base, 'preview-sheet.png'), Buffer.from(sheetShot.data, 'base64'));
+  await writeFile(resolve(previews, 'preview-sheet.png'), Buffer.from(sheetShot.data, 'base64'));
   await click('view-animation');
   console.log('PASS frame stepping, onion skin and output sheet layout');
 
@@ -213,7 +219,7 @@ try {
 
   await evaluate('document.querySelector("[data-bg=checker]").click();document.querySelector("#toast").hidden=true;document.activeElement.blur();window.scrollTo(0,0)');
   const shot = await call('Page.captureScreenshot', { format: 'png', captureBeyondViewport: true });
-  await writeFile(resolve(base, 'preview.png'), Buffer.from(shot.data, 'base64'));
+  await writeFile(resolve(previews, 'preview.png'), Buffer.from(shot.data, 'base64'));
   const responsive = [];
   for (const width of [1024,768]) {
     await call('Emulation.setDeviceMetricsOverride', { width, height: 1000, deviceScaleFactor: 1, mobile: false });

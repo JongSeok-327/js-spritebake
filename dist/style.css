@@ -14,8 +14,8 @@
   --accent: #5e6ad2;
   --accent-hover: #747fe0;
   --focus: #828fff;
-  --mono: "Cascadia Code", "SFMono-Regular", Consolas, monospace;
-  font: 13px/1.5 "Segoe UI Variable Text", "Segoe UI", "Malgun Gothic", sans-serif;
+  --mono: "Cascadia Code", "SFMono-Regular", Menlo, Consolas, monospace;
+  font: 13px/1.5 "Segoe UI Variable Text", "Segoe UI", -apple-system, BlinkMacSystemFont, "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
   font-synthesis: none;
 }
 

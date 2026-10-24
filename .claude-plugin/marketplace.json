@@ -1,0 +1,12 @@
+{
+  "name": "js-spritebake",
+  "owner": { "name": "JongSeok" },
+  "description": "JS SpriteBake: local video to transparent sprite sheets.",
+  "plugins": [
+    {
+      "name": "js-spritebake",
+      "source": "./",
+      "description": "Turn local videos into transparent sprite sheets with the JS SpriteBake CLI."
+    }
+  ]
+}

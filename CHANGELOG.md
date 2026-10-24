@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+- Add a command-line interface (`cli.mjs`) that runs the editor pipeline in headless Chrome/Edge.
+- Add a Claude Code plugin with a `spritebake` skill that drives the CLI.
+- Lower the minimum Python version to 3.9 so macOS's bundled `python3` works; `start.command` prefers a newer Python when installed.
+- Add macOS system fonts and a favicon. `npm start` works on macOS.
+- Browser checks no longer overwrite README screenshots unless `UPDATE_PREVIEWS=1`.
+- Rewrite the English, Korean and Japanese READMEs around quick start, CLI and skill usage.
+
 ## 1.0.0
 
 First public release under the JS SpriteBake name.

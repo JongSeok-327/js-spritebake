@@ -6,9 +6,12 @@
   "bugs": { "url": "https://github.com/JongSeok-327/js-spritebake/issues" },
   "private": true,
   "type": "module",
+  "bin": { "spritebake": "cli.mjs" },
+  "engines": { "node": ">=22" },
   "scripts": {
-    "check": "node --check dist/app.js && node --check dist/core.js && node --check dist/key-worker.js",
+    "check": "node --check cli.mjs && node --check dist/app.js && node --check dist/core.js && node --check dist/key-worker.js",
     "test": "node --test tests/core.test.mjs",
-    "start": "python server.py"
+    "start": "python3 server.py || python server.py",
+    "bake": "node cli.mjs"
   }
 }

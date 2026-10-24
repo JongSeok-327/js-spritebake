@@ -4,7 +4,7 @@ Reports and small improvements are welcome. This is a personal convenience tool,
 
 ## Run and check
 
-Use Python 3.11+ and Chrome/Edge. Node.js 22+ is needed for JavaScript tests, not for normal app use.
+Use Python 3.9+ and Chrome/Edge. Node.js 22+ is needed for the CLI and JavaScript tests, not for the editor.
 
 ```sh
 python3 server.py
@@ -19,7 +19,7 @@ On Windows use `py -3` or `python` instead of `python3`. Optional browser checks
 node tests/browser-check.mjs http://127.0.0.1:8765
 ```
 
-The browser script creates its own geometric walking video using canvas and MediaRecorder. A nonstandard Chrome path can be supplied through `SPRITE_TEST_BROWSER`. Temporary profiles and downloads are stored under `.qa/`, which must remain untracked.
+The browser script creates its own geometric walking video using canvas and MediaRecorder. A nonstandard Chrome path can be supplied through `SPRITE_TEST_BROWSER`. Temporary profiles and downloads are stored under `.qa/`, which must remain untracked. The check also runs `cli.mjs` once. README screenshots are only rewritten with `UPDATE_PREVIEWS=1`.
 
 ## Useful reports
 
@@ -31,6 +31,6 @@ The browser script creates its own geometric walking video using canvas and Medi
 
 ## Changes
 
-Preserve shared scaling, source timestamps, transparent output and per-frame timing. Keep normal usage free of package installation and external requests. Follow [DESIGN.md](DESIGN.md) for visual changes. Update all three READMEs when a change affects setup or use. Tests should check observable behavior, especially saved output and timing.
+Preserve shared scaling, source timestamps, transparent output and per-frame timing. Keep normal usage free of package installation and external requests. Follow [DESIGN.md](DESIGN.md) for visual changes. Update all three READMEs, and `skills/spritebake/SKILL.md` for CLI changes, when a change affects setup or use. Tests should check observable behavior, especially saved output and timing.
 
 By contributing, you agree to provide your contribution under this project's [MIT license](LICENSE). This does not change the license or ownership of unrelated media.

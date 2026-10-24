@@ -4,152 +4,167 @@
 
 English · [한국어](README.ko.md) · [日本語](README.ja.md)
 
-[Download v1.0.0](https://github.com/JongSeok-327/js-spritebake/releases/tag/v1.0.0) · [Editor screenshot](preview.png) · [Sheet preview](preview-sheet.png)
+[Download v1.0.0](https://github.com/JongSeok-327/js-spritebake/releases/tag/v1.0.0) · MIT · no API key · your video never leaves your computer
+
+![JS SpriteBake editor](preview.png)
+
+Pick a range from a video of your character on a solid background. JS SpriteBake samples evenly spaced frames, removes the background, keeps one crop and scale across the whole animation, and saves a transparent PNG sheet. You can also save a ZIP with individual frames and per-frame timing for your game engine.
+
+There are three ways to use it:
+
+| | Best for | You need |
+| --- | --- | --- |
+| [**Editor**](#quick-start) | Tuning by eye: key color, frame exclusions, offsets | Python 3.9+ · Chrome or Edge |
+| [**Command line**](#command-line) | Repeating the same settings, scripts, batch work | Node.js 22+ · Chrome or Edge |
+| [**Claude Code skill**](#claude-code-skill) | "Make a sprite sheet from this clip" in plain language | Claude Code · Node.js 22+ · Chrome or Edge |
+
+The editor screens are in Korean. This guide labels each button with its English meaning.
 
 ## Why I made this
 
 I kept turning character videos into sprites while working on my projects, and thought a small tool like this would make the process easier. JS SpriteBake started as a personal convenience tool; I'm sharing it in case it helps someone else's workflow too.
 
-## What it does
+## Quick start
 
-- Open a video from your computer and select a time range and frame count.
-- Remove a solid-color background, adjust edges and reduce color spill.
-- Keep a shared crop and scale across the animation; adjust individual positions.
-- Preview animation, the output sheet, individual frames and onion skin.
-- Suggest adjacent duplicate frames, inspect pairs, apply exclusions and undo them. Merged duplicates retain their playback time.
-- Download a transparent PNG sheet or a ZIP with individual PNGs, timing JSON and reusable settings.
+### macOS
 
-**v1.0.0 · MIT · no runtime package installation · no API key**
+1. Download the [release ZIP](https://github.com/JongSeok-327/js-spritebake/releases/tag/v1.0.0) and extract it.
+2. Open **Terminal**, type `cd ` (with a space), drag the extracted folder onto the window, and press Return.
+3. Run:
 
-The editor UI is currently in Korean. These instructions are available in three languages. The public package starts empty; bring your own video.
+   ```sh
+   ./start.command
+   ```
 
-## Requirements
+4. Your browser opens **http://127.0.0.1:8765**. Keep Terminal open while you work. Press **Control+C** to stop.
 
-| Required | Details |
+macOS already includes `python3` (3.9). If Terminal asks to install the **Command Line Tools**, accept and run the command again. A newer Python from [python.org](https://www.python.org/downloads/) is used automatically when installed.
+
+You can also double-click `start.command` in Finder. Because the script is not signed, macOS may block it the first time. Either keep using Terminal, or go to **System Settings → Privacy & Security** and click **Open Anyway** for that file. You do not need to turn off any security settings.
+
+### Windows
+
+1. Install Python 3.9+ from [python.org](https://www.python.org/downloads/). Tick **Add python.exe to PATH** in the installer.
+2. Download the [release ZIP](https://github.com/JongSeok-327/js-spritebake/releases/tag/v1.0.0) and **extract the whole folder**. Running it from inside the ZIP does not work.
+3. Double-click **`start.cmd`**. It finds `py -3` or `python` and opens your browser.
+4. Keep the command window open while you work. Press **Ctrl+C** in it to stop.
+
+Already have Python? From the project folder you can run `python3 server.py` (macOS) or `py -3 server.py` (Windows).
+
+## Using the editor
+
+1. **영상 파일 열기** (Open video): choose or drag in a video. MP4 (H.264) and WebM work best.
+2. **시작 / 끝** (Start / End) and **추출 프레임 수** (Frame count): the range starts as the first second with 12 frames. For a walk, pick one full step cycle. The end time is not sampled, so a looping clip does not repeat its first pose.
+3. **프레임 추출** (Extract frames).
+4. **배경 제거** (Background removal): set the color, or use **원본에서 색 찍기** (pick from video) and click the background. If edges stay green, raise spill suppression or tolerance. If parts of the character vanish, lower tolerance. Check the result against both light and dark preview backgrounds.
+5. Review frames with ‹ ›, onion skin and the checkboxes. X/Y fields nudge the selected frame. **출력 시트** (Output sheet) previews the saved layout.
+6. **중복 후보** (Duplicate candidates) suggests adjacent frames that look the same. Click a pair to compare it, **후보 제외** (Exclude candidates) to merge, **되돌리기** (Undo) to restore. A merged frame's time goes to the frame before it.
+7. Save with **PNG 시트** (PNG sheet) or **전체 ZIP 저장** (Save all as ZIP).
+
+Work is not saved automatically. To continue later, use **설정 저장** (Save settings). Next time, open the same video, load the settings, and extract again.
+
+**Tips for source video:** keep the camera still, show the whole body with space around weapons or accessories, and use one even background color that does not appear on the character. Walking in place is easiest when your game moves the character itself.
+
+## Output files
+
+| File | Contents |
 | --- | --- |
-| Python | **3.11 or newer**, installed from [python.org](https://www.python.org/downloads/). Verify with the commands below. |
-| Browser | A current desktop **Chrome or Edge**. Decoding depends on the browser and operating system; MP4/H.264 is a practical starting point. |
-| Computer | Windows or macOS, with enough memory for the selected video and frames. Start with 512–1024px processing and 12–24 frames. |
+| `*-sheet.png` | Transparent sprite sheet (grid). |
+| `frames/001.png` … | Individual transparent frames (ZIP only). |
+| `*.json` | Each frame's position in the sheet, source time, offset, pivot and `durationMs` (ZIP only). |
+| `*-settings.json` | Settings and frame edits to restore the work. It does not contain the video. |
 
-Python only serves the app files; the browser processes the video. **FFmpeg, Node.js, npm, Git, GPU software, paid accounts and model services are not needed to use the app.** Downloading the project and installing prerequisites initially requires internet access; the downloaded app can run offline.
+**If you merged duplicates, play each frame for its `durationMs`** to keep the original speed. A PNG alone cannot store variable timing. Unchecking a frame by hand drops its time instead.
 
-Verified locally on Windows with Python 3.11 and Chrome. The macOS launcher and instructions use portable Python/browser APIs, but **an actual MacBook has not yet been tested**. Safari, Firefox and phone use are not verified release targets.
+The default pivot `(0.5, 0.9)` is a fixed point in the cell, not a detected foot position. Guides, frame numbers and onion skin are never written into the PNG.
 
-## Windows
+## Command line
 
-1. Install Python 3.11+ from the official site. Ensure the Python launcher or `python` command is available; reopen your terminal after installation.
-2. Download the repository ZIP or a release ZIP, then **extract the entire folder**. Do not run from inside the ZIP.
-3. Double-click **`start.cmd`**. It tries `py -3`, then `python`, and opens your default browser.
-4. Keep the command window open while working. To stop, focus that window and press **Ctrl+C**.
-
-Or use PowerShell in the extracted folder:
-
-```powershell
-py -3 --version
-py -3 server.py
-```
-
-If `py` is unavailable but Python is installed:
-
-```powershell
-python --version
-python server.py
-```
-
-If the default browser cannot decode your file, copy the printed local URL into Chrome or Edge.
-
-## macOS / MacBook
-
-1. Install Python 3.11+ from [python.org](https://www.python.org/downloads/). Verify that `python3 --version` meets the requirement.
-2. Extract the entire downloaded ZIP.
-3. Open Terminal in the project folder and run:
+`cli.mjs` runs the same pipeline as the editor in a hidden Chrome/Edge window, so the results match. It needs [Node.js 22+](https://nodejs.org/) and Chrome or Edge, and does not need Python.
 
 ```sh
-python3 --version
-python3 server.py
+node cli.mjs walk.mp4                                   # first second, 12 frames → walk-sprites.zip
+node cli.mjs walk.mp4 --start 0.5 --end 1.5 --frames 16 --dedupe
+node cli.mjs walk.mp4 --key-color "#0000ff" --format png --out sprites
+node cli.mjs walk.mp4 --preset walk-settings.json       # reuse settings saved from the editor
 ```
 
-Keep Terminal open. Stop the server with **Control+C**. The launcher does not rely on Intel- or Apple Silicon-specific binaries; video decoding is provided by your browser.
+Progress goes to stderr. The last line on stdout is the path of the saved file. Run `node cli.mjs --help` for every option:
 
-For optional double-click startup, first make the included script executable in that folder:
+| Option | Meaning | Default |
+| --- | --- | --- |
+| `--start`, `--end` | Range in seconds (end not sampled) | 0 → first second |
+| `--frames` | Frames to sample, 2–64 | 12 |
+| `--resolution` | Processing limit: 512, 1024, 2048 | 1024 |
+| `--key-color` | Background color `#rrggbb` | `#00ff00` |
+| `--tolerance`, `--softness`, `--despill` | 1–60, 0–20, 0–100 | 30, 8, 75 |
+| `--no-key` | Keep the background | |
+| `--cell`, `--columns` | Cell size 128/256/512/1024, columns 1–16 | 256, 4 |
+| `--no-crop` | Do not crop to the shared content area | |
+| `--fps` | Playback FPS written to the JSON | frames ÷ range |
+| `--dedupe` | Merge suggested duplicates, keeping total time | |
+| `--preset` | Settings JSON from the editor (flags override it) | |
+| `--format` | `zip` or `png` | `zip` |
+| `--out` | Output folder | current folder |
+| `--browser` | Chrome/Edge path, if not in the usual place | auto |
 
-```sh
-chmod +x start.command
-./start.command
+`npm run bake -- walk.mp4` and, after `npm link`, `spritebake walk.mp4` work too.
+
+## Claude Code skill
+
+The repository is also a [Claude Code](https://claude.com/claude-code) plugin. It contains a `spritebake` skill that runs the command line for you. Install it in Claude Code:
+
+```
+/plugin install js-spritebake --marketplace JongSeok-327/js-spritebake
 ```
 
-You can then double-click `start.command` in Finder. If macOS blocks the downloaded script, review its contents and use the Terminal command above; you do not need to disable system security settings. Homebrew is optional, not a requirement.
+Older Claude Code versions use two steps: `/plugin marketplace add JongSeok-327/js-spritebake`, then `/plugin install js-spritebake@js-spritebake`.
 
-## Local address and startup options
+Then ask in your own words, for example: *"Make a sprite sheet from ~/Movies/walk.mp4: green background, 8 frames, save to ./sprites."* Claude picks the options, runs the CLI and checks the sheet before replying. When you work inside this repository, `claude --plugin-dir .` loads the skill without installing it.
 
-The default URL is **`http://127.0.0.1:8765`**. If that port is occupied, the app tries the next 19 ports and prints the actual address. Open that address rather than double-clicking `dist/index.html`, which cannot reliably load ES modules and workers from `file://`.
+## Troubleshooting
 
-```sh
-# macOS; on Windows replace python3 with py -3 or python
-python3 server.py --no-browser
-python3 server.py --port 8900
-```
-
-## Basic workflow
-
-1. Click **영상 파일 열기** (open video), or drag a file onto it.
-2. Set **시작 / 끝** (start / end) and **추출 프레임 수** (frame count). The initial range is the first second, with 12 frames. For walking, choose approximately one complete cycle.
-3. Click **프레임 추출** (extract). The end timestamp is excluded so a repeated endpoint is less likely.
-4. Set the key color or use **원본에서 색 찍기** (pick from source). Adjust removal range, edge softness and spill suppression. Inspect both light and dark preview backgrounds.
-5. Click frames to inspect them. Use previous/next, onion skin, inclusion checkboxes and X/Y offsets. **출력 시트** previews the saved layout.
-6. Check duplicate proposals. Clicking a pair alternates its two poses. **후보 제외** applies proposals; **되돌리기** restores them. Application history remains visible, and inclusion/position changes recalculate proposals.
-7. Use **PNG 시트** or **전체 ZIP 저장** to download results. Save settings before closing the tab if you want to resume later.
-
-**설정 초기화** resets processing, frame selections, offsets and merged timing, then re-extracts the current video's first second with defaults. It keeps the opened video.
-
-Fixed camera, full-body framing, spare room around weapons/accessories and a uniform background usually make better source footage. Pick a background color that is absent from the character. In-place walking is convenient when your game controls movement.
-
-## Exports and timing
-
-| Output | Contents |
+| Problem | Fix |
 | --- | --- |
-| `*-sheet.png` | Transparent RGBA grid. |
-| `frames/001.png`, etc. | Individual transparent frames in export order, inside the ZIP. |
-| `*.json` | Sheet coordinates, source timestamps, offsets, pivot and each frame's `durationMs`. |
-| `*-settings.json` | Processing settings and frame edits. It does not include the video. |
+| `Python 3.9 or newer is required` | Install Python from [python.org](https://www.python.org/downloads/) and open a new terminal. |
+| macOS says `start.command` cannot be opened | Run `./start.command` in Terminal, or use **Open Anyway** in System Settings → Privacy & Security. |
+| `Permission denied` on `./start.command` | Run `chmod +x start.command` once. |
+| The browser does not open | Copy the address printed in the terminal into Chrome or Edge. |
+| `No free local port` | Run `python3 server.py --port 8900`. |
+| The video will not load | The browser cannot decode it. Use MP4 (H.264) or WebM and convert with a tool you trust. |
+| The animation barely moves | The range is too short for the frame count (frames repeat) or too long (poses are skipped). Check the frame diagnostics under the frame list. |
+| `Chrome or Edge was not found` (CLI) | Install one, or pass `--browser <path>` / set `SPRITEBAKE_BROWSER`. |
+| `Node.js 22 or newer is required` (CLI) | Install the LTS version from [nodejs.org](https://nodejs.org/). |
+| The page looks out of date | Force a reload: Ctrl+F5 (Windows) or Command+Shift+R (macOS). |
 
-Duplicate proposals compare neighboring included frames in a shared coordinate system. Both overall and lower-body differences must meet the threshold. This is a heuristic, not motion understanding or automatic walk-cycle detection.
+Verified on Windows (Python 3.11, Chrome) and macOS on Apple Silicon (built-in Python 3.9, Chrome). Safari, Firefox and phones are not tested.
 
-**When duplicates are merged, use each frame's `durationMs` in your game to preserve timing.** PNG alone cannot store variable frame timing. Manually unchecking a frame removes its duration; applying a duplicate proposal transfers its duration to the previous retained frame. “Include all” restores one base duration per frame.
+## Limits
 
-The default pivot `(0.5, 0.9)` is an output-cell reference, not a detected foot location. X/Y adjustments use output pixels. Preview guides, numbers and onion skin are not written into PNGs. To resume, open the same video, load its settings JSON and extract again. New files use `js-spritebake` / `js-spritebake-preset` format identifiers; earlier prototype settings are still accepted.
+- 2–64 frames, processing up to 2048px (the source is never upscaled). Large jobs need a lot of memory. Lower the resolution or frame count if things slow down.
+- Background removal is color keying. It does not use AI. Character colors that match the background, blur, shadows and fine hair may need better footage.
+- There is no automatic walk-cycle detection, stabilization or frame interpolation. Duplicate detection is a heuristic.
 
-## Privacy and local security
+## Privacy and security
 
-- Selected videos are read through browser File/Blob APIs and processed in browser memory. There is **no video upload endpoint**, cloud processing, account, analytics, application cookie, CDN or external font request.
-- The included server binds to **`127.0.0.1` only**, not the LAN. It serves app assets from `dist/`, rejects unexpected hosts/origins and file-write methods, disables directory listings, blocks paths resolving outside the app directory and sends a restrictive content security policy.
-- Opening the app makes local HTTP requests for its own files and worker. Downloads save files only when requested. Export metadata includes the source filename and processing information; review it before sharing.
-- Work is not autosaved. Refreshing or closing the tab loses in-memory edits; download settings and results first. Browser/OS extensions, malware and browser background networking are outside this app's control.
+- Videos are read and processed inside your browser. Nothing is uploaded, and there are no accounts, analytics, cookies or external requests.
+- The local server listens on `127.0.0.1` only. It serves just the app files and rejects other hosts and origins. Do not expose it through port forwarding or tunnels.
+- Exported JSON contains the source file name. Check it before sharing.
 
-**Local does not mean risk-free.** Use trusted videos and settings files and keep Python and your browser updated. This small local server is not a public hosting server; do not expose it through port forwarding, tunnels or changes to the bind address. Python's own [`http.server` documentation](https://docs.python.org/3/library/http.server.html) also distinguishes basic local serving from production hosting. See [SECURITY.md](SECURITY.md) for scope and reporting.
-
-## Limits and troubleshooting
-
-- 2–64 frames; processing up to 2048px without upscaling the source. Memory and maximum sheet dimensions impose additional limits. Large jobs can still consume substantial RAM; reduce resolution/count if the tab slows down.
-- No automatic stabilization, frame interpolation, AI background removal or generation API. Keying can remove matching character colors; blur, shadows and fine hair may need better source footage or manual work.
-- MP4/MOV are containers, not codec guarantees. If loading fails, use a browser-supported codec or convert the file with a tool you trust. No converter is bundled.
-- If animation looks static, inspect the distinct-source-frame count and extraction interval. A very short range can repeat decoded frames; a long range with too few frames can miss intermediate poses.
-- If Python is not found, install it and reopen the terminal. If startup fails on a port, try `--port 8900`. If the browser does not open, copy the printed URL. After updating files, use Ctrl+F5 on Windows or Command+Shift+R on macOS.
+Details are in [SECURITY.md](SECURITY.md).
 
 ## Development
 
-No build or `pip`/`npm install` step is required. Python tests use the standard library; JavaScript checks require Node.js 22+.
+No build step and no `pip`/`npm install` are needed.
 
 ```sh
-python3 -m unittest discover -s tests -p "test_*.py"
-node --test tests/core.test.mjs
-npm run check
+npm run check && npm test                                  # syntax + core logic (Node 22+)
+python3 -m unittest discover -s tests -p "test_*.py"       # server boundaries
+node tests/browser-check.mjs http://127.0.0.1:8765         # full editor + CLI check, server running
 ```
 
-`node tests/browser-check.mjs http://127.0.0.1:8765` runs optional Chrome integration checks against an already-running server. It generates a geometric walking WebM in the browser; it does not need personal footage or external artwork. Set `SPRITE_TEST_BROWSER` if Chrome is installed in a nonstandard location. Browser checks download temporary artifacts into ignored `.qa/`.
+The browser check generates its own test video and writes temporary files to the ignored `.qa/` folder. Set `UPDATE_PREVIEWS=1` to refresh the README screenshots, and `SPRITE_TEST_BROWSER` for a nonstandard Chrome path. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
-## License and references
+## License and credits
 
-[MIT](LICENSE). This covers the project's code and documentation, not imported videos or characters. Use source media you have permission to use and check any generation provider's terms separately.
-
-JS SpriteBake's application code was written specifically for this project and does not vendor third-party application code or runtime packages. Workflow/design research is recorded transparently in [ACKNOWLEDGEMENTS.md](ACKNOWLEDGEMENTS.md). See [CHANGELOG.md](CHANGELOG.md) for release details.
+[MIT](LICENSE). The license covers this project's code and documentation, not the videos or characters you import. Research references are listed in [ACKNOWLEDGEMENTS.md](ACKNOWLEDGEMENTS.md), and release notes are in [CHANGELOG.md](CHANGELOG.md).
