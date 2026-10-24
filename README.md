@@ -4,7 +4,15 @@
 
 English · [한국어](README.ko.md) · [日本語](README.ja.md)
 
-[Download v1.0.0](https://github.com/JongSeok-327/js-spritebake/releases/tag/v1.0.0) · [Editor screenshot](preview.png) · [Sheet preview](preview-sheet.png)
+[Download v1.1.0](https://github.com/JongSeok-327/js-spritebake/releases/tag/v1.1.0) · [Editor screenshot](preview.png) · [Sheet preview](preview-sheet.png)
+
+![Input video and exported sprite animation](docs/assets/demo.gif)
+
+[![JS SpriteBake editor with source and transparent output](docs/assets/editor-en.png)](docs/assets/editor-en.png)
+
+**Try it without your own footage:** launch the app and click **Try sample video**. The included [2-second MP4](dist/samples/walk-demo.mp4) loads, extracts 12 frames and plays the result. It is a small character drawn for this project; the sample and demo are MIT-licensed. [Sample details](docs/SAMPLES.md) · [Output sheet screenshot](docs/assets/sheet-en.png).
+
+The app and these instructions support **English, 한국어 and 日本語**. Change the language at the top right; your video and frame edits stay in place. The first visit follows your browser language, with English as fallback. Local links ending in `?lang=en`, `?lang=ko` or `?lang=ja` open a specific language. No translation API, cookie or localStorage is used.
 
 ## Why I made this
 
@@ -19,9 +27,9 @@ I kept turning character videos into sprites while working on my projects, and t
 - Suggest adjacent duplicate frames, inspect pairs, apply exclusions and undo them. Merged duplicates retain their playback time.
 - Download a transparent PNG sheet or a ZIP with individual PNGs, timing JSON and reusable settings.
 
-**v1.0.0 · MIT · no runtime package installation · no API key**
+**v1.1.0 · MIT · no runtime package installation · no API key**
 
-The editor UI is currently in Korean. These instructions are available in three languages. The public package starts empty; bring your own video.
+Starts with an empty workspace; the bundled sample loads only when requested. Personal development videos are not included.
 
 ## Requirements
 
@@ -142,7 +150,7 @@ No build or `pip`/`npm install` step is required. Python tests use the standard 
 
 ```sh
 python3 -m unittest discover -s tests -p "test_*.py"
-node --test tests/core.test.mjs
+node --test tests/core.test.mjs tests/i18n.test.mjs
 npm run check
 ```
 

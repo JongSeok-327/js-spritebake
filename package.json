@@ -1,14 +1,14 @@
 {
   "name": "js-spritebake",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "license": "MIT",
   "repository": { "type": "git", "url": "git+https://github.com/JongSeok-327/js-spritebake.git" },
   "bugs": { "url": "https://github.com/JongSeok-327/js-spritebake/issues" },
   "private": true,
   "type": "module",
   "scripts": {
-    "check": "node --check dist/app.js && node --check dist/core.js && node --check dist/key-worker.js",
-    "test": "node --test tests/core.test.mjs",
+    "check": "node --check dist/app.js && node --check dist/core.js && node --check dist/key-worker.js && node --check dist/i18n.js",
+    "test": "node --test tests/core.test.mjs tests/i18n.test.mjs",
     "start": "python server.py"
   }
 }

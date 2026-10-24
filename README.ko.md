@@ -4,7 +4,15 @@
 
 [English](README.md) · 한국어 · [日本語](README.ja.md)
 
-[v1.0.0 다운로드](https://github.com/JongSeok-327/js-spritebake/releases/tag/v1.0.0) · [편집 화면](preview.png) · [시트 미리보기](preview-sheet.png)
+[v1.1.0 다운로드](https://github.com/JongSeok-327/js-spritebake/releases/tag/v1.1.0) · [편집 화면](preview.png) · [시트 미리보기](preview-sheet.png)
+
+![입력 영상과 추출한 스프라이트 애니메이션 비교](docs/assets/demo.gif)
+
+[![원본 영상과 투명 스프라이트가 함께 보이는 편집 화면](docs/assets/editor-ko.png)](docs/assets/editor-ko.png)
+
+**내 영상 없이 먼저 사용해 보기:** 앱을 실행하고 **샘플 영상으로 시작**을 누르면, 포함된 [2초짜리 MP4](dist/samples/walk-demo.mp4)를 불러와 12프레임으로 추출하고 바로 재생합니다. 이 프로젝트를 위해 직접 그린 도형 캐릭터이며 샘플과 데모에도 MIT 라이선스를 적용합니다. [샘플 제작 정보](docs/SAMPLES.md) · [출력 시트 화면](docs/assets/sheet-en.png).
+
+앱 화면과 설명서를 모두 **영어·한국어·일본어**로 제공합니다. 오른쪽 위에서 언어를 바꿔도 현재 영상과 프레임 편집은 유지됩니다. 처음에는 브라우저 언어를 따르며 지원 언어가 없으면 영어로 표시합니다. 로컬 주소 뒤에 `?lang=en`, `?lang=ko`, `?lang=ja`를 붙여 해당 언어로 열 수도 있습니다. 번역 API·쿠키·localStorage는 사용하지 않습니다.
 
 ## 만든 이유
 
@@ -19,9 +27,9 @@
 - 인접 중복 후보 비교·제외·되돌리기, 제외한 후보의 재생 시간 유지
 - 투명 PNG 시트 또는 개별 PNG·재생 정보·설정 JSON이 들어 있는 ZIP 저장
 
-**v1.0.0 · MIT · 실행용 패키지 설치 없음 · API 키 불필요**
+**v1.1.0 · MIT · 실행용 패키지 설치 없음 · API 키 불필요**
 
-현재 편집 화면은 한국어입니다. 사용 설명은 영어·한국어·일본어로 제공합니다. 공개 버전에는 개인 작업 영상을 넣지 않았으며, 처음에는 빈 작업 화면에서 시작합니다.
+처음에는 빈 작업 화면으로 시작하고, 샘플은 버튼을 눌렀을 때만 불러옵니다. 개인 작업 영상은 포함하지 않습니다.
 
 ## 준비사항
 
@@ -143,7 +151,7 @@ python3 server.py --port 8900
 ```sh
 # Windows에서는 python3 대신 py -3 또는 python
 python3 -m unittest discover -s tests -p "test_*.py"
-node --test tests/core.test.mjs
+node --test tests/core.test.mjs tests/i18n.test.mjs
 npm run check
 ```
 

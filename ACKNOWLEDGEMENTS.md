@@ -8,3 +8,5 @@ JS SpriteBake is a separately implemented application. No source files or applic
 The runtime uses the Python standard library and browser APIs. It does not require third-party JavaScript or Python packages, CDN resources, or model services. Common algorithms and file formats are not claimed as exclusive inventions.
 
 The MIT license covers this project's code and documentation. It does not grant rights to videos, characters, fonts supplied by an operating system, trademarks, or other assets a user imports. Research references are not affiliations or endorsements.
+
+The bundled geometric walking video, demo GIF and screenshots were created specifically for this project and are MIT-licensed. Their source and preparation are documented in [docs/SAMPLES.md](docs/SAMPLES.md). No personal character videos are bundled.

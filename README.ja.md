@@ -4,7 +4,15 @@
 
 [English](README.md) · [한국어](README.ko.md) · 日本語
 
-[v1.0.0をダウンロード](https://github.com/JongSeok-327/js-spritebake/releases/tag/v1.0.0) · [編集画面](preview.png) · [シート表示](preview-sheet.png)
+[v1.1.0をダウンロード](https://github.com/JongSeok-327/js-spritebake/releases/tag/v1.1.0) · [編集画面](preview.png) · [シート表示](preview-sheet.png)
+
+![入力動画と書き出したスプライトアニメーションの比較](docs/assets/demo.gif)
+
+[![元動画と透過スプライトを並べた編集画面](docs/assets/editor-ja.png)](docs/assets/editor-ja.png)
+
+**自分の動画なしで試す:** アプリを起動して **サンプル動画を試す** を押すと、同梱の[2秒のMP4](dist/samples/walk-demo.mp4)を読み込み、12枚を抽出して再生します。このプロジェクト用に描いた図形キャラクターで、サンプルとデモにもMITライセンスを適用します。[サンプルの詳細](docs/SAMPLES.md) · [出力シート画面](docs/assets/sheet-en.png)。
+
+アプリと説明書は **英語・韓国語・日本語** に対応しています。右上で言語を変えても、動画とフレームの編集内容は保持されます。初回は対応するブラウザー言語を使い、該当しない場合は英語になります。ローカルURLに `?lang=en`、`?lang=ko`、`?lang=ja` を付けても切り替えられます。翻訳API・Cookie・localStorageは使用しません。
 
 ## 作ったきっかけ
 
@@ -19,9 +27,9 @@
 - 隣接する重複候補の比較・除外・取り消し。結合したフレームの再生時間を維持
 - 透過PNGシート、または個別PNG・再生情報・設定JSONをまとめたZIPを保存
 
-**v1.0.0 · MIT · 実行用パッケージの追加インストール不要 · APIキー不要**
+**v1.1.0 · MIT · 実行用パッケージの追加インストール不要 · APIキー不要**
 
-現在、編集画面の言語は韓国語です。この説明書は英語・韓国語・日本語で用意しています。公開パッケージには個人の制作動画を含めず、空の作業画面から始まります。
+起動時は空の作業画面です。サンプルはボタンを押したときだけ読み込みます。個人の制作動画は含みません。
 
 ## 必要なもの
 
@@ -143,7 +151,7 @@ python3 server.py --port 8900
 ```sh
 # Windowsではpython3をpy -3またはpythonに置き換えます。
 python3 -m unittest discover -s tests -p "test_*.py"
-node --test tests/core.test.mjs
+node --test tests/core.test.mjs tests/i18n.test.mjs
 npm run check
 ```
 

@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.1.0
+
+- Add English, Korean and Japanese interfaces, including help, status messages and accessibility labels.
+- Follow the browser language on first use and support explicit `?lang=en`, `?lang=ko` and `?lang=ja` links. Switching language retains video and frame edits without cookies or localStorage.
+- Include an original 2-second walking MP4 and a one-click sample workflow that extracts and previews 12 frames.
+- Show an animated input/output comparison and editor screenshots in all three READMEs, with sample provenance and licensing.
+- Verify sample seeking through a local Blob, translation completeness, preserved edits and responsive layouts.
+
 ## 1.0.0
 
 First public release under the JS SpriteBake name.
